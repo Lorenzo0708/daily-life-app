@@ -1,0 +1,5 @@
+npm run dist \\per l'eseguibile
+
+npm start \\solo codice
+
+cd Desktop\mia-app \\per arrivare a mettere quelli sopra
