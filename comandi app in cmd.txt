@@ -3,3 +3,19 @@ npm run dist \\per l'eseguibile
 npm start \\solo codice
 
 cd Desktop\mia-app \\per arrivare a mettere quelli sopra
+
+
+Eccoli lì! Missione compiuta. 🚀
+
+Vedo tutto in ordine: il ramo è main, il repository è Private (come volevi), e ci sono esattamente i 7 file puliti che abbiamo selezionato, senza la "zavorra" delle cartelle pesanti.
+
+Due cose veloci per il futuro:
+Modifiche al codice: Se domani cambi qualcosa nel file main.js sul tuo PC, per aggiornare GitHub ti basterà aprire il CMD nella cartella e scrivere questi tre comandi veloci:
+
+git add .
+
+git commit -m "Ho aggiunto una nuova funzione"
+
+git push
+
+Collaboratori: Se mai vorrai far vedere il codice a un amico senza rendere il progetto pubblico, vai in Settings -> Collaborators e aggiungi il suo nome utente GitHub.
