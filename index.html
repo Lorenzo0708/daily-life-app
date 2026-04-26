@@ -37,6 +37,13 @@ body::before {
 }
 </style>
 <script type="text/javascript">
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js');
+    });
+  }
+
 function refreshDailyLife()
 {
  location.reload();
