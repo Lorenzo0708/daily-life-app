@@ -9387,7 +9387,7 @@ function writeOnPercentage(val)
    }
    else if(percentageMode=='finance')
    {
-    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)/%','(' +values1+ '/' +values2+ ')%'];
+    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)%','(' +values1+ '/' +values2+ ')%'];
     suggerimenti.textContent = calculationShape[selectedButton];
    }
    else if(percentageMode=='analysis')
@@ -9423,7 +9423,7 @@ function writeOnPercentage(val)
    }
    else if(percentageMode=='finance')
    {
-    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)/%','(' +values1+ '/' +values2+ ')%'];
+    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)%','(' +values1+ '/' +values2+ ')%'];
     suggerimenti.textContent = calculationShape[selectedButton];
    }
    else if(percentageMode=='analysis')
@@ -9459,7 +9459,7 @@ function writeOnPercentage(val)
    }
    else if(percentageMode=='finance')
    {
-    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)/%','(' +values1+ '/' +values2+ ')%'];
+    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)%','(' +values1+ '/' +values2+ ')%'];
     suggerimenti.textContent = calculationShape[selectedButton];
    }
    else if(percentageMode=='analysis')
@@ -9507,22 +9507,22 @@ function preceedPercentageValues()
   }
   else if(percentageMode=='finance')
   {
-   if(selectedButton=0)
-   result = Number(values1 + ((values1 * values2) / 100));
+   if(selectedButton==0)
+   result = (values1*values2)/100;
    else if(selectedButton==1)
-   result = Number(values1 - ((values1 * values2) / 100));
+   result = (values1/values2-1)*100;
    else if (selectedButton === 2) 
-   result = values1 * (values2 / 100);
+   result = (values1/values2)*100;
   }
   else if(percentageMode=='analysis')
   {
-   if(selectedButton==0)
+   if(values2==0)
    {
-    result = values2-values1;
-    if(result<0)
-    result *= -1;
-    result = (result*values2)/100;
+    result = 0; 
+    return;
    }
+   if(selectedButton==0)
+   result = (Math.abs(values2-values1)/values2)*100;
    else if(selectedButton==1)
    result = ((values1-values2)/values2)*100;
    else if(selectedButton==2)
@@ -9575,8 +9575,8 @@ function showSuggestions(n)
  }
  else if(percentageMode=='finance')
  {
-  n=selectFirstNumbers(n,3);
-  suggestionData=[n+ 'x(N%)/100','(' +n+ '/N-1)%','(' +n+ '/N)%'];
+  n=(n/100).toFixed(3);
+  suggestionData=[n+ 'xN%','(' +n+ '/N-1)%','(' +n+ '/N)%'];
  }
  else if(percentageMode=='analysis')
  {
@@ -9603,7 +9603,7 @@ function createSuggestions(n,arr)
   var sugg = document.createElement('button');
   sugg.id = 'base' +i;
   sugg.dataset.index = i;
-  sugg.style.width = '20vw';
+  sugg.style.width = 'auto';
   sugg.style.height = '10vw';
   sugg.style.fontSize = '3.2vw';
   sugg.style.fontWeight = 'bold';
@@ -9714,14 +9714,24 @@ function percentageOppositeNumber()
   {
    var minus = percentualitext.value.indexOf('-');
    values2 = percentualitext.value.substr(minus+1,percentualitext.value.length - minus);
-   if(percentageMode=='base')
-   percentualitext.value = 'N = ' +values2;
+   if(percentageMode=='base' || percentageMode=='variations' || percentageMode=='finance' || percentageMode=='analysis')
+   {
+    if(percentageMode=='analysis' && selectedButton==2)
+    percentualitext.value = 'I = ' +values2;
+    else
+    percentualitext.value = 'N = ' +values2;
+   }
   }
   else
   {
    values2 = '-' +values2;
-   if(percentageMode=='base' || percentageMode=='variations')
-   percentualitext.value = 'N = ' +values2;
+   if(percentageMode=='base' || percentageMode=='variations' || percentageMode=='finance' || percentageMode=='analysis')
+   {
+    if(percentageMode=='analysis' && selectedButton==2)
+    percentualitext.value = 'I = ' +values2;
+    else
+    percentualitext.value = 'N = ' +values2;
+   }
   }
   if(percentageMode=='base')
   {
@@ -9732,6 +9742,16 @@ function percentageOppositeNumber()
   {
    var calculationShape=['+','-','x','÷'];
    suggerimenti.textContent = values1 + calculationShape[selectedButton]+ '(' +values2+ '%)';
+  }
+  else if(percentageMode=='finance')
+  {
+   var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)/%','(' +values1+ '/' +values2+ ')%'];
+    suggerimenti.textContent = calculationShape[selectedButton];
+  }
+  else if(percentageMode=='analysis')
+  {
+   var calculationShape=['|' +values1+ '-' +values2+ '|/' +values1+ '%','(' +values2+ '-' +values1+ ')/' +values1+ '%','(' +values2+ '-' +values1+ ')/' +values1+ '%'];
+   suggerimenti.textContent = calculationShape[selectedButton];
   }
  }
 }
