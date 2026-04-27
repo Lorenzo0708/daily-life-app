@@ -27,7 +27,7 @@ body {
 body::before {
     content: "";
     position: fixed;
-    inset: 0;
+    inset: gt0;
     z-index: -1;
 
     background: #ffffff;
@@ -154,6 +154,7 @@ sfondoopaco.style.display = 'block';
     defaultMethod = button_options[option_number];
 
     writeOnDefaultButton();
+    percentageMode=modeArray[option_number];
 };
 
 function writeOnDefaultButton()
@@ -9315,10 +9316,30 @@ diminuizione --> uguale ad aumento
 Variazione percentuale --> |100[(x-y)/y]|
 */
 
-//Segue Finanza
-//Interessi: Montante = Capitale × (1 + Tasso) elevato al Tempo
-//Margine/ricarico: Prezzo = Costo × (1 + Ricarico)
-//Commissioni: Risultato = Importo × (1 + Fattore × Commissione)
+//Finanza
+/**
+ * --- CALCOLO 1: SCONTO ---
+ * SCOPO: Determinare il risparmio effettivo e il prezzo finale.
+ * INPUT: (1) Prezzo originale, (2) Percentuale di sconto.
+ * FORMULA: Risparmio = (Prezzo * Percentuale) / 100.
+ * ESEMPIO: 100€ con sconto 20% -> Risparmio 20€, Finale 80€.
+ */
+
+/**
+ * --- CALCOLO 2: VARIAZIONE PERCENTUALE ---
+ * SCOPO: Analizzare la crescita o il calo tra due valori nel tempo.
+ * INPUT: (1) Valore Iniziale, (2) Valore Finale.
+ * FORMULA: % = ((Finale - Iniziale) / Iniziale) * 100.
+ * ESEMPIO: Da 50€ a 75€ -> Variazione del +50%.
+ */
+
+/**
+ * --- CALCOLO 3: INCIDENZA PERCENTUALE ---
+ * SCOPO: Capire quanto pesa una parte rispetto al totale (quota).
+ * INPUT: (1) Valore Parziale, (2) Valore Totale.
+ * FORMULA: % = (Parte / Totale) * 100.
+ * ESEMPIO: 20€ di spesa su 100€ totali -> Incidenza del 20%.
+ */
 
 
 //Analisi
@@ -9326,20 +9347,13 @@ Variazione percentuale --> |100[(x-y)/y]|
 // errore percentuale con segno (indica sovra/sottostima) '(n-N)/N%'    
 // variazione percentuale tra valore iniziale e finale '(F-I)/I%' 
 
-//Finanza
-//Interessi composti: Montante = Capitale × (1 + Tasso) elevato al Tempo
-//Montante = C × (1 + r)^t
-//Interessi semplici: Montante = Capitale × (1 + Tasso × Tempo)
-//Montante = C × (1 + r × t)
-//Margine / ricarico: Prezzo = Costo × (1 + Ricarico)
-//Prezzo = C × (1 + ricarico)
-//Sconto: Prezzo finale = Prezzo iniziale × (1 - Sconto)
-//Prezzo finale = P × (1 - s)
+
 
 //Vedere se inserire le parti commentati che seguono
 
 var characterCounter=0;
 var values1='',values2=''; //Variabile che dovrà prendere il valore del valore inserito dall'utente inizialmente
+var modeArray=['base','variations','finance','analysis','utility'];
 var percentageMode='base';
 var suggested=false;
 var selectedButton; //Variabile per capire quale bottone è stato selezionato
@@ -9370,6 +9384,11 @@ function writeOnPercentage(val)
    {
     var calculationShape=['+','-','x','÷'];
     suggerimenti.textContent = values1 + calculationShape[selectedButton]+ '(' +values2+ '%)';
+   }
+   else if(percentageMode=='finance')
+   {
+    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)/%','(' +values1+ '/' +values2+ ')%'];
+    suggerimenti.textContent = calculationShape[selectedButton];
    }
    else if(percentageMode=='analysis')
    {
@@ -9402,6 +9421,11 @@ function writeOnPercentage(val)
     var calculationShape=['+','-','x','÷'];
     suggerimenti.textContent = values1 + calculationShape[selectedButton]+ '(' +values2+ '%)';
    }
+   else if(percentageMode=='finance')
+   {
+    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)/%','(' +values1+ '/' +values2+ ')%'];
+    suggerimenti.textContent = calculationShape[selectedButton];
+   }
    else if(percentageMode=='analysis')
    {
     var calculationShape=['|' +values1+ '-' +values2+ '|/' +values1+ '%','(' +values2+ '-' +values1+ ')/' +values1+ '%','(' +values2+ '-' +values1+ ')/' +values1+ '%'];
@@ -9432,6 +9456,11 @@ function writeOnPercentage(val)
    {
     var calculationShape=['+','-','x','÷'];
     suggerimenti.textContent = values1 + calculationShape[selectedButton]+ '(' +values2+ '%)';
+   }
+   else if(percentageMode=='finance')
+   {
+    var calculationShape=[values1+ 'x(' +values2+ '%)/100','(' +values1+ '/' +values2+ '-1)/%','(' +values1+ '/' +values2+ ')%'];
+    suggerimenti.textContent = calculationShape[selectedButton];
    }
    else if(percentageMode=='analysis')
    {
@@ -9475,6 +9504,15 @@ function preceedPercentageValues()
    result = values1*(values2/100);
    else if(selectedButton==3)
    result = values1*(values2/100);
+  }
+  else if(percentageMode=='finance')
+  {
+   if(selectedButton=0)
+   result = Number(values1 + ((values1 * values2) / 100));
+   else if(selectedButton==1)
+   result = Number(values1 - ((values1 * values2) / 100));
+   else if (selectedButton === 2) 
+   result = values1 * (values2 / 100);
   }
   else if(percentageMode=='analysis')
   {
@@ -9524,24 +9562,28 @@ function enableAllButtons()
 function showSuggestions(n)
 {
  suggerimenti.innerHTML = '';
+ var suggestionData;
  if(percentageMode=='base')
  {
   n=selectFirstNumbers(n,3);
-  var suggestionData=['N%(' +n+ ')','N/(' +n+ '%)',n+ '/(N%)'];
-  createSuggestions(suggestionData.length,suggestionData); // Il numero tra parentesi indica quanti bottoni deve creare
+  suggestionData=['N%(' +n+ ')','N/(' +n+ '%)',n+ '/(N%)'];
  }
  else if(percentageMode=='variations')
  {
   n=selectFirstNumbers(n,5);
-  var suggestionData=['+(N%)','-(N%)','x(N%)','÷(N%)'];
-  createSuggestions(suggestionData.length,suggestionData);
+  suggestionData=['+(N%)','-(N%)','x(N%)','÷(N%)'];
+ }
+ else if(percentageMode=='finance')
+ {
+  n=selectFirstNumbers(n,3);
+  suggestionData=[n+ 'x(N%)/100','(' +n+ '/N-1)%','(' +n+ '/N)%'];
  }
  else if(percentageMode=='analysis')
  {
   n=selectFirstNumbers(n,3);
-  var suggestionData=['|N-n|/N%','(n-N)/N%','(F-I)/I%'];
-  createSuggestions(suggestionData.length,suggestionData);
+  suggestionData=['|N-' +n+ '|/N%','(' +n+ '-N)/N%','(' +n+ '-I)/I%'];
  }
+ createSuggestions(suggestionData.length,suggestionData);
 }
 
 function selectFirstNumbers(num,val) //Il primo valore è il numero il secondo è il valore di cifre
@@ -9640,7 +9682,7 @@ function setCalculationByMode() //Agisce dopo aver cliccato il bottone del calco
  spacepercentuale.disabled = true;
  spacepercentuale.value = '=';
  backspacepercentuale.disabled = true;
- if(percentageMode=='base' || percentageMode=='variations' || percentageMode=='analysis')
+ if(percentageMode=='base' || percentageMode=='variations' || percentageMode=='finance' || percentageMode=='analysis')
  {
   if(percentageMode=='analysis' && selectedButton==2)
   percentualitext.value = 'I = ';
