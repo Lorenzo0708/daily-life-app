@@ -13526,29 +13526,34 @@ function chiudiPannello()
  document.getElementById('pannelloAccount').style.display = 'none';
 }
 var dbRef = null;
-firebase.auth().onAuthStateChanged((user) => {
+firebase.auth().onAuthStateChanged(async (user) => { // Aggiunto async qui
     var infoEmailPnl = document.getElementById('infoEmailPannello');
     var opzioniGuest = document.getElementById('opzioniGuest');
     var opzioniUser = document.getElementById('opzioniUser');
     var btnChiudi = document.getElementById('btnChiudiPannello');
-    
-    // Recuperiamo il loader
     var loader = document.getElementById('loaderGlobale');
 
     if(user) {
         dbRef = firebase.database().ref('users/' + user.uid + '/dati');
         aggiornaAvatar(user.email);
+        
         if(infoEmailPnl) infoEmailPnl.innerText = user.email;
         if(opzioniGuest) opzioniGuest.style.display = "none";
         if(opzioniUser) opzioniUser.style.display = "block";
         if(btnChiudi) btnChiudi.style.setProperty('display', 'inline-block', 'important');
         
         chiudiPannello(); 
-        
-        // Carichiamo i dati e nascondiamo il loader DOPO il caricamento
-        caricaDatiDalCloud().then(() => {
+
+        try {
+            // Usiamo 'true' per forzare il download ignorando il timer dei 20 secondi
+            await caricaDatiDalCloud(true); 
+        } catch (e) {
+            console.error("Errore durante il recupero dati:", e);
+        } finally {
+            // Nascondiamo il loader in ogni caso, così l'app non resta bloccata
             if (loader) loader.style.display = 'none';
-        });
+        }
+
     } else {
         dbRef = null;
         if(infoEmailPnl) infoEmailPnl.innerText = "Effettua l'accesso per continuare";
@@ -13561,7 +13566,6 @@ firebase.auth().onAuthStateChanged((user) => {
         
         apriPannello();
 
-        // Se non c'è utente, nascondiamo il loader perché siamo pronti per il login
         if (loader) loader.style.display = 'none';
     }
 });
@@ -13589,41 +13593,36 @@ if (!sessionStorage.getItem('ultimo_sync_time')) {
     sessionStorage.setItem('ultimo_sync_time', Date.now());
 }
 
-async function caricaDatiDalCloud()
-{
- if(!dbRef)
- return;
- var ultimoSync = sessionStorage.getItem('ultimo_sync_time');
- var adesso = Date.now();
- if(ultimoSync && (adesso - ultimoSync < 20000)) 
- return;
- try{
-  var snapshot = await dbRef.once('value');
-  var datiCloud = snapshot.val();
-  if(datiCloud)
-  {
-   var datiCambiati = false;
-   for(var chiave in datiCloud)
-{
-  var valoreLocale = localStorage.getItem(chiave);
-  var valoreCloud = datiCloud[chiave];
+async function caricaDatiDalCloud(forza = false) {
+    if(!dbRef) return;
 
-  // Confronto diretto senza forzature di stringa superflue
-  if(valoreLocale !== valoreCloud) 
-  {
-    localStorage.setItem(chiave, valoreCloud);
-    datiCambiati = true;
-  }
-}
- 
-   if(datiCambiati)
-   {
-    sessionStorage.setItem('ultimo_sync_time', Date.now());
-    location.reload();
-   }
-  }
- }
- catch (e) {} //Entra in caso di errore nel caricamento
+    var ultimoSync = sessionStorage.getItem('ultimo_sync_time');
+    var adesso = Date.now();
+
+    // Se "forza" è true, saltiamo il controllo del tempo (utile al login)
+    if(!forza && ultimoSync && (adesso - ultimoSync < 20000)) 
+        return;
+
+    try {
+        var snapshot = await dbRef.once('value');
+        var datiCloud = snapshot.val();
+        if(datiCloud) {
+            var datiCambiati = false;
+            for(var chiave in datiCloud) {
+                var valoreLocale = localStorage.getItem(chiave);
+                var valoreCloud = datiCloud[chiave];
+
+                if(valoreLocale !== valoreCloud) {
+                    localStorage.setItem(chiave, valoreCloud);
+                    datiCambiati = true;
+                }
+            }
+            if(datiCambiati) {
+                sessionStorage.setItem('ultimo_sync_time', Date.now());
+                location.reload(); // Ricarica per applicare i nuovi record
+            }
+        }
+    } catch (e) {}
 }
 async function syncTotaleSuCloud()
 {
