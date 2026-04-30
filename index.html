@@ -44,10 +44,7 @@ if ('serviceWorker' in navigator) {
     });
   }
 
-function refreshDailyLife()
-{
- location.reload();
-}
+
 var d=0,pr=0,l=0;
 var s,a=null,b=null,c=null,op,i,form,r=null;
 var atris=null,itris=0,x=0,o=0,ntris=0;
@@ -68,55 +65,7 @@ var defaultMethod = button_options[option_number];
 
 
 window.onload = function() {
-var insuno = document.getElementById("insuno");
-var passwordKey = localStorage.getItem("passwordKey");
 
-    var divRichiedi = document.getElementById("richiedipassword");
-
-    if (passwordKey) {
-    sfondoopaco.style.display = 'none';
-        divRichiedi.style.display = 'none';
-    } else {
-sfondoopaco.style.display = 'block';
-        divRichiedi.style.display = 'block';
-    }
-
-    var crea = document.getElementById("crea");
-    var conferma = document.getElementById("conferma");
-    var inserire = document.getElementById("inserire");
-
-    // Caricamento password già salvata
-    checkEntry = parseInt(localStorage.getItem("checkEntry")) || 0;
-    var ps = localStorage.getItem("password");
-    password_test = (ps === null || ps === "null" || ps === "") ? null : ps;
-
-    // LOGICA SCHERMATA PASSWORD ORIGINALE
-    if(checkEntry == 0)
-    {
-     crea.style.display = 'block';      // Mostra la creazione del PIN
-     inserire.style.display = 'none';   // Nasconde l'inserimento del PIN
-     insuno.style.fontSize = '8vw';
-     insuno.placeholder = 'Crea PIN';
-    }
-    else
-    {
-     crea.style.display = 'none';
-     inserire.style.display = 'block';
-     insuno.placeholder = '';
-    }
-
-    // ⚠️ ORA ENTRA IN GIOCO LO SWITCH
-    renderSwitch(); // disegna lo switch
-
-    var enabled = localStorage.getItem("passwordEnabled");
-
-    if (enabled === "on") {
-        inseriscipassword.style.display = "block";
-        sfondoopaco.style.display = "block";
-    } else {
-        inseriscipassword.style.display = "none";
-        sfondoopaco.style.display = "none";
-    }
 
     // CARICAMENTO CLASSIFICA MEMORY
     if (localStorage.getItem("timesList")) {
@@ -186,170 +135,7 @@ function setNextOption()
 }
 
 
-function writeNumbers(n)
-{
- if(insuno.placeholder != '')
- {
-  insuno.placeholder = '';
-  insuno.style.fontSize= '22vw';
- }
- if(insuno.value.length < 6)
- {
-  insuno.value += '•';
-  password += n;
- }
-}
-function sendPassword()
-{
- if(checkEntry == 0)
- {
-  if(!password_test || password_test == "")
-  {
-   crea.style.display = 'block';
-   inserire.style.display = 'none';
-   insuno.style.fontSize = '8vw';
-   insuno.placeholder = 'Crea PIN';
-  }
- }
- else
- {
-  crea.style.display = 'none';
-  inserire.style.display = 'block';
-  insuno.placeholder = '';
- }
- if(checkEntry == 0 && password_test == null)
- {
-  if(password.length < 4)
-  {
-   setTimeout(() => {
-    insuno.style.fontSize = '22vw';
-    insuno.style.color = 'black';
-    insuno.value = '';
-   }, 2000);
-   insuno.style.fontSize = '6vw';
-   insuno.style.color = 'red';
-   insuno.value = 'Minimo 4 caratteri';
-   return;
-  }
-  password_test = password;
-  password = '';
-  insuno.value = '';
-  insuno.style.height = '24vw';
-  insuno.style.fontSize = '6vw';
-  insuno.placeholder = 'Conferma PIN...';
-  return;
- }
- if(checkEntry == 0 && password_test != null)
- {
-  if(checkEntry == 0)
-  {
-   crea.style.display = 'none';
-   inserire.style.display = 'none';
-  }
-  else
-  {
-   crea.style.display = 'none';
-   inserire.style.display = 'block';
-  }
- inseriscipassword.style.display = "block";
- sfondoopaco.style.display = "block";
-  if(password == password_test)
-  {
-   localStorage.setItem("password", password_test);
-   localStorage.setItem("checkEntry", 1);
-   inseriscipassword.style.display = 'none';
-   sfondoopaco.style.display = 'none';
-  }
-  else
-  {
-   setTimeout(() => {
-    insuno.style.fontSize = '22vw';
-    insuno.style.color = 'black';
-    insuno.value = '';
-   }, 2000);
-   insuno.style.fontSize = '6vw';
-   insuno.style.color = 'red';
-   insuno.value = 'Password errata!';
-   crea.style.display = 'block';
-  }
-  return;
- }
- if(password==password_test)
- {
-  inseriscipassword.style.display = 'none';
-  sfondoopaco.style.display = 'none';
- }
- else
- {
-  setTimeout(() => {
-   insuno.style.fontSize = '22vw';
-   insuno.style.color = 'black';
-   insuno.value = '';
-  }, 2000);
-  insuno.style.fontSize = '6vw';
-  insuno.style.color = 'red';
-  insuno.value = 'Password errata!';
- }
- password = '';
-}
-function resetPIN() {
-    localStorage.removeItem("password"); // cancella PIN salvato
-    localStorage.setItem("checkEntry", 0); // imposta come primo accesso
-    password_test = null; // azzera variabile in memoria
-    password = '';
 
-    setTimeout(() => {
-        passwordresettata.style.display = 'none';
-        sfondoopaco3.style.display = 'none';
-        location.reload(); // ricarica pagina per vedere schermata creazione PIN
-    }, 2000);
-
-    passwordresettata.style.display = 'block';
-    sfondoopaco3.style.display = 'block';
-}
-function passwordBackSpace()
-{
- if(insuno.value == 'Password errata!')
- return;
- password = password.slice(0, -1);
- insuno.value = insuno.value.slice(0, -1);
- if(crea.style.display = 'block' && checkEntry == 0 && password_test == null && insuno.value == '')
- {
-  insuno.style.fontSize = '8vw';
-  insuno.placeholder = 'Crea PIN';
- }
- else if(crea.style.display = 'block' && checkEntry == 0 && password_test != null && insuno.value == '')
- {
-  insuno.style.fontSize = '6vw';
-  insuno.placeholder = 'Conferma PIN...';
- }
-}
-if (localStorage.getItem("passwordEnabled") === null) {
-    localStorage.setItem("passwordEnabled", "on");
-}
-
-function renderSwitch() {
-    var state = localStorage.getItem("passwordEnabled");
-    var div = document.getElementById("abilitatepassword");
-
-    if (state === "on") {
-        div.textContent = "[🟢 ●────────]";
-    } else {
-        div.textContent = "[⚪────────●]";
-    }
-}
-
-function togglePasswordSwitch() {
-    var state = localStorage.getItem("passwordEnabled");
-
-    if (state === "on") {
-        localStorage.setItem("passwordEnabled", "off");
-    } else {
-        localStorage.setItem("passwordEnabled", "on");
-    }
-
-    renderSwitch();
-}
 
 
 
@@ -5210,7 +4996,7 @@ function cancMemory()
 </script>
 </head>
 <body text="ffffff">
-<div id="loaderGlobale" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 30000; flex-direction: column; align-items: center; justify-content: center; color: white">
+<div id="loaderGlobale" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 30000; flex-direction: column; align-items: center; justify-content: center; color: white">
 <div class="spinner">
 </div>
 <p style="margin-top: 5.13vw;">
@@ -5323,7 +5109,7 @@ Chiudi
 <table>
 <tr>
 <th>
-<button id="DailyLife_Logo" style="width: 42vw; height: 38vw; background-color: transparent; border-radius: 30%; border: none" onClick="refreshDailyLife();">
+<button id="DailyLife_Logo" style="width: 42vw; height: 38vw; background-color: transparent; border-radius: 30%; border: none" onClick="location.reload();">
 <table>
 <tr>
 <th>
@@ -13741,40 +13527,43 @@ function chiudiPannello()
 }
 var dbRef = null;
 firebase.auth().onAuthStateChanged((user) => {
- var infoEmailPnl = document.getElementById('infoEmailPannello');
- var opzioniGuest = document.getElementById('opzioniGuest');
- var opzioniUser = document.getElementById('opzioniUser');
- var btnChiudi = document.getElementById('btnChiudiPannello');
- if(user)
- {
-  dbRef = firebase.database().ref('users/' + user.uid + '/dati');
-  aggiornaAvatar(user.email);
-  if(infoEmailPnl)
-  infoEmailPnl.innerText = user.email;
-  if(opzioniGuest)
-  opzioniGuest.style.display = "none";
-  if(opzioniUser)
-  opzioniUser.style.display = "block";
-  if(btnChiudi)
-  btnChiudi.style.setProperty('display', 'inline-block', 'important');
-  chiudiPannello(); 
-  caricaDatiDalCloud(); 
- }
- else
- {
-  dbRef = null;
-  if(infoEmailPnl)
-  infoEmailPnl.innerText = "Effettua l'accesso per continuare";
-  if(opzioniGuest)
-  opzioniGuest.style.display = "block";
-  if(opzioniUser)
-  opzioniUser.style.display = "none";
-  if(btnChiudi)
-  btnChiudi.style.setProperty('display', 'none', 'important');
-  document.getElementById('inizialeAvatar').innerText = "?";
-  document.getElementById('simboloEmail').style.backgroundColor = "rgba(255,255,255,0.25)";
-  apriPannello();
- }
+    var infoEmailPnl = document.getElementById('infoEmailPannello');
+    var opzioniGuest = document.getElementById('opzioniGuest');
+    var opzioniUser = document.getElementById('opzioniUser');
+    var btnChiudi = document.getElementById('btnChiudiPannello');
+    
+    // Recuperiamo il loader
+    var loader = document.getElementById('loaderGlobale');
+
+    if(user) {
+        dbRef = firebase.database().ref('users/' + user.uid + '/dati');
+        aggiornaAvatar(user.email);
+        if(infoEmailPnl) infoEmailPnl.innerText = user.email;
+        if(opzioniGuest) opzioniGuest.style.display = "none";
+        if(opzioniUser) opzioniUser.style.display = "block";
+        if(btnChiudi) btnChiudi.style.setProperty('display', 'inline-block', 'important');
+        
+        chiudiPannello(); 
+        
+        // Carichiamo i dati e nascondiamo il loader DOPO il caricamento
+        caricaDatiDalCloud().then(() => {
+            if (loader) loader.style.display = 'none';
+        });
+    } else {
+        dbRef = null;
+        if(infoEmailPnl) infoEmailPnl.innerText = "Effettua l'accesso per continuare";
+        if(opzioniGuest) opzioniGuest.style.display = "block";
+        if(opzioniUser) opzioniUser.style.display = "none";
+        if(btnChiudi) btnChiudi.style.setProperty('display', 'none', 'important');
+        
+        document.getElementById('inizialeAvatar').innerText = "?";
+        document.getElementById('simboloEmail').style.backgroundColor = "rgba(255,255,255,0.25)";
+        
+        apriPannello();
+
+        // Se non c'è utente, nascondiamo il loader perché siamo pronti per il login
+        if (loader) loader.style.display = 'none';
+    }
 });
 var originalSetItem = localStorage.setItem;
 localStorage.setItem = function(key, value) {
@@ -13826,6 +13615,7 @@ async function caricaDatiDalCloud()
     datiCambiati = true;
   }
 }
+ 
    if(datiCambiati)
    {
     sessionStorage.setItem('ultimo_sync_time', Date.now());
@@ -13936,6 +13726,7 @@ async function eseguiRegistrazione() {
         await firebase.auth().createUserWithEmailAndPassword(email, pass);
         await syncTotaleSuCloud();
         mostraNotifica("Account creato!");
+        sfondoopaco.style.display = 'none';
     }
     catch (e) {
         // Qui gestiamo solo l'errore se la mail esiste già nel database
@@ -13944,57 +13735,40 @@ async function eseguiRegistrazione() {
         } else {
             mostraNotifica("Errore durante la registrazione.");
         }
-        // console.log(e.code); // Opzionale, solo per tuo controllo
     }
     finally {
         mostraLoader(false);
     }
 }
-async function logoutSicuro()
-{
- try {
-  if(dbRef)
-  {
-   await syncTotaleSuCloud(); // Salviamo un'ultima volta
-  }
-  await firebase.auth().signOut();
-  localStorage.clear();
-  mostraNotifica("Uscita effettuata con successo");
-  setTimeout(() => {
-   location.reload();
-  }, 1000);
- }
- catch (error) {
-    console.error("Dettaglio errore:", error.code);
-    let messaggioItaliano = "";
+async function logoutSicuro() {
+    // 1. Mostriamo subito il loader per "congelare" la vista
+    const loader = document.getElementById('loaderGlobale');
+    if (loader) loader.style.display = 'flex';
 
-    switch (error.code) {
-    case 'auth/invalid-email':
-        messaggioItaliano = "L'indirizzo email non è scritto correttamente.";
-        break;
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential': // <--- AGGIUNGI QUESTO
-        messaggioItaliano = "Email o password non corrette.";
-        break;
-    case 'auth/too-many-requests':
-        messaggioItaliano = "Troppi tentativi falliti. L'accesso è temporaneamente bloccato.";
-        break;
-    case 'auth/network-request-failed':
-        messaggioItaliano = "Connessione internet assente o instabile.";
-        break;
-    case 'auth/email-already-in-use': // Utile se hai anche la registrazione
-        messaggioItaliano = "Questa email è già associata a un account.";
-        break;
-    case 'auth/weak-password':
-        messaggioItaliano = "La password deve contenere almeno 6 caratteri.";
-        break;
-    default:
-        messaggioItaliano = "Errore imprevisto. Riprova tra poco.";
-}
+    try {
+        // 2. Sincronizzazione finale (se il database è attivo)
+        if (typeof dbRef !== 'undefined' && dbRef) {
+            // Usiamo un timeout di 2 secondi per il salvataggio, così se la rete è lenta non restiamo bloccati
+            await Promise.race([
+                syncTotaleSuCloud(),
+                new Promise(resolve => setTimeout(resolve, 2000))
+            ]);
+        }
 
-    mostraNotifica(messaggioItaliano);
-}
+        // 3. Logout da Firebase e pulizia locale
+        await firebase.auth().signOut();
+        localStorage.clear();
+
+        // 4. RELOAD IMMEDIATO
+        // Non usiamo setTimeout: più veloce ricarichiamo, meno l'utente vede "salti"
+        location.reload();
+
+    } catch (error) {
+        console.error("Errore durante il logout:", error);
+        // In caso di errore (es. rete assente), puliamo comunque il locale e forziamo il reload
+        localStorage.clear();
+        location.reload();
+    }
 }
 window.addEventListener('beforeunload', syncTotaleSuCloud);
 </script>
