@@ -65,45 +65,88 @@ var defaultMethod = button_options[option_number];
 
 
 window.onload = function() {
+    // 1. CARICAMENTO CLASSIFICA MEMORY CON CONTROLLI DI SICUREZZA
+    try {
+        let storedTimes = localStorage.getItem("timesList");
+        let storedNames = localStorage.getItem("namesList");
 
+        timesList = storedTimes ? JSON.parse(storedTimes) : [];
+        namesList = storedNames ? JSON.parse(storedNames) : [];
 
-    // CARICAMENTO CLASSIFICA MEMORY
-    if (localStorage.getItem("timesList")) {
-        timesList = JSON.parse(localStorage.getItem("timesList"));
+        if (Array.isArray(timesList) && Array.isArray(namesList) && 
+            timesList.length > 0 && timesList.length === namesList.length) {
+            
+            var paired = timesList.map((t, i) => ({ 
+                name: namesList[i] || "Anonimo", 
+                time: t 
+            }));
+
+            paired.sort((a, b) => {
+                let timeA = a.time ? timeToMs(a.time) : 9999999;
+                let timeB = b.time ? timeToMs(b.time) : 9999999;
+                return timeA - timeB;
+            });
+
+            timesList = paired.map(p => p.time);
+            namesList = paired.map(p => p.name);
+            
+            if (typeof printTimes === "function") {
+                printTimes();
+            }
+        }
+    } catch (e) {
+        console.error("Errore classifica:", e);
+        timesList = [];
+        namesList = [];
     }
 
-    if (localStorage.getItem("namesList")) {
-        namesList = JSON.parse(localStorage.getItem("namesList"));
+    // 2. GESTIONE CAMPI DATA (SOLO SE ESISTONO)
+    if (typeof dateFields !== 'undefined' && Array.isArray(dateFields)) {
+        dateFields.forEach(id => {
+            var input = document.getElementById(id);
+            if (input && typeof onlyNumbers === "function") {
+                onlyNumbers(input);
+            }
+        });
     }
 
-    if(timesList.length > 0) {
-        var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
-        paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
-        timesList = paired.map(p => p.time);
-        namesList = paired.map(p => p.name);
-        printTimes();
+    // 3. AUTONEXT (CON CONTROLLO ESISTENZA ELEMENTI)
+    // Usiamo una piccola funzione di supporto interna per evitare errori se gli ID mancano
+    function safeAutoNext(id1, id2, len) {
+        var el1 = document.getElementById(id1);
+        var el2 = document.getElementById(id2);
+        if (el1 && el2 && typeof autoNext === "function") {
+            autoNext(el1, el2, len);
+        }
     }
 
-  dateFields.forEach(id => {
-    var input = document.getElementById(id);
-    onlyNumbers(input);
-  });
+    safeAutoNext("insgiornouno", "insmeseuno", 2);
+    safeAutoNext("insmeseuno", "insannouno", 2);
+    safeAutoNext("insgiornodue", "insmesedue", 2);
+    safeAutoNext("insmesedue", "insannodue", 2);
 
-  autoNext(document.getElementById("insgiornouno"), document.getElementById("insmeseuno"), 2);
-  autoNext(document.getElementById("insmeseuno"), document.getElementById("insannouno"), 2);
-  autoNext(document.getElementById("insgiornodue"), document.getElementById("insmesedue"), 2);
-  autoNext(document.getElementById("insmesedue"), document.getElementById("insannodue"), 2);
+    // 4. GESTIONE OPZIONI E PULSANTI
+    try {
+        option_number = Number(localStorage.getItem("option_number") || 0);
 
- option_number = Number(localStorage.getItem("option_number") || 0);
+        // Verifica che button_options esista e che l'indice sia valido
+        if (typeof button_options !== 'undefined' && Array.isArray(button_options)) {
+            if (isNaN(option_number) || option_number < 0 || option_number >= button_options.length) {
+                option_number = 0;
+            }
+            defaultMethod = button_options[option_number];
+        }
 
-    if (option_number < 0 || option_number >= button_options.length || isNaN(option_number)) {
-        option_number = 0;
-    }
+        // Verifica modalità percentuale
+        if (typeof modeArray !== 'undefined' && Array.isArray(modeArray)) {
+            percentageMode = modeArray[option_number];
+        }
 
-    defaultMethod = button_options[option_number];
-
-    writeOnDefaultButton();
-    percentageMode=modeArray[option_number];
+        // Scrittura sul pulsante (solo se la funzione esiste)
+        if (typeof writeOnDefaultButton === "function") {
+            writeOnDefaultButton();
+        }
+    } catch (e) {}
 };
 
 
@@ -13769,7 +13812,7 @@ async function logoutSicuro() {
         location.reload();
     }
 }
-window.addEventListener('beforeunload', syncTotaleSuCloud);
+//window.addEventListener('beforeunload', syncTotaleSuCloud);
 </script>
 <script>
 function aggiornaAvatar(email)
