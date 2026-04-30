@@ -2166,75 +2166,69 @@ function caricaDaily()
  var blocks = JSON.parse(salvati);
  blocks.reverse().forEach(blocco => addDaily(blocco.titolo, blocco.righe, blocco.id));
 }
-function salvaNote()
-{
- var container = document.getElementById('container5');
- var blocks = [];
- var children = container.children;
- for (var i = 0; i < children.length; i++)
- {
-  var el = children[i];
-  if (el.tagName === 'BUTTON' && el.classList.contains('save'))
-  {
-   var id = el.dataset.id;
-   var titolo = el.textContent;
-   var table = el.nextElementSibling;
-   var righe = [];
-   if(table && table.tagName === 'TABLE')
-   {
-    var rows = table.rows;
-    for (var r = 0; r < rows.length; r++)
-    {
-     var row = rows[r];
-     var titleDiv = row.cells[0].querySelector('div div:nth-child(2)');
-     var textarea = row.cells[0].querySelector('textarea');
-     if(titleDiv && textarea)
-     {
-      righe.push({
-      titolo: titleDiv.textContent || 'Capitolo',
-      contenuto: textarea.value
-      });
-     }
+function salvaNote() {
+    var container = document.getElementById('container5');
+    var blocks = [];
+    var children = container.children;
+
+    for (var i = 0; i < children.length; i++) {
+        var el = children[i];
+        
+        // 1. Identifica il blocco note principale (il bottone arancione)
+        if (el.tagName === 'BUTTON' && el.classList.contains('save')) {
+            var id = el.dataset.id;
+            var titoloPrincipale = el.textContent;
+            var table = el.nextElementSibling; // La tabella che segue il bottone
+            var righeCapitoli = [];
+
+            // 2. Se esiste la tabella, entriamo a leggere i capitoli
+            if (table && table.tagName === 'TABLE') {
+                var rows = table.rows;
+                for (var r = 0; r < rows.length; r++) {
+                    var row = rows[r];
+
+                    // Cerchiamo gli elementi usando le classi che abbiamo aggiunto
+                    var titleDiv = row.querySelector('.chapter-title'); 
+                    var textarea = row.querySelector('textarea.save');
+
+                    if (titleDiv && textarea) {
+                        righeCapitoli.push({
+                            titolo: titleDiv.textContent, // Prende "Capitolo 1" ecc.
+                            contenuto: textarea.value     // Prende il testo scritto
+                        });
+                    }
+                }
+            }
+
+            // 3. Spingiamo l'intero blocco nell'array da salvare
+            blocks.push({
+                id: id,
+                titolo: titoloPrincipale,
+                capitoli: righeCapitoli
+            });
+        }
     }
-   }
-   blocks.push({
-   id: id,
-   titolo: titolo,
-   capitoli: righe
-   });
-  }
- }
- localStorage.setItem('noteData', JSON.stringify(blocks));
+    
+    // 4. Salva tutto nel localStorage
+    localStorage.setItem('noteData', JSON.stringify(blocks));
 }
-function caricaNote()
-{
- var salvate = localStorage.getItem('noteData');
- if(!salvate)
- return;
- var blocks = JSON.parse(salvate).reverse();
- blocks.forEach(blocco => {
-  addNotes(blocco.titolo, blocco.capitoli || [], blocco.id);
-  var container = document.getElementById('container5');
-  var children = container.children;
-  var lastBtn = children[children.length - 2];
-  var lastTable = children[children.length - 1];
-  if(lastBtn && lastTable && lastTable.tagName === 'TABLE' && blocco.capitoli)
-  {
-   var rows = lastTable.rows;
-   for(var i = 0; i < blocco.capitoli.length; i++)
-   {
-    var titoloCapitolo = blocco.capitoli[i].titolo;
-    var contenuto = blocco.capitoli[i].contenuto;
-    if(rows[i])
-    {
-     var titleDiv = rows[i].cells[0].querySelector('div div:nth-child(2)');
-     var textarea = rows[i].cells[0].querySelector('textarea');
-     if(titleDiv) titleDiv.textContent = titoloCapitolo;
-     if (textarea) textarea.value = contenuto;
-    }
-   }
-  }
- });
+function caricaNote() {
+    var salvate = localStorage.getItem('noteData');
+    if (!salvate) return;
+
+    // Traduciamo la stringa in un array di oggetti
+    var blocks = JSON.parse(salvate).reverse();
+    var container = document.getElementById('container5');
+    container.innerHTML = ''; // Puliamo il contenitore prima di ricaricare
+
+    blocks.forEach(blocco => {
+        // 1. Creiamo il blocco principale (il bottone arancione)
+        // Passiamo blocco.capitoli per far generare le righe internamente
+        addNotes(blocco.titolo, blocco.capitoli || [], blocco.id);
+        
+        // 2. Dopo addNotes, dobbiamo assicurarci che i dati siano visualizzati
+        // ma addNotes chiama già createRow(capitolo.titolo) internamente se passi l'array.
+    });
 }
 var loading = true;
 function addHomeWorks(valore = '', valoreData = '', valoreTesto = '', coloreCheck = 'white')
@@ -3256,7 +3250,7 @@ sfondoopaco.style.display = 'block';
     titleBtn.insertAdjacentElement('afterend', table);
     table.appendChild(createRow());
     table.style.display = 'none';
-    updatePlusButtons();
+    updatePlusButtonsForTable(currentTable);
   }
 
 function createRow(titolo = 'Capitolo') {
@@ -3294,6 +3288,7 @@ function createRow(titolo = 'Capitolo') {
 
     var titleDiv = document.createElement('div');
     titleDiv.textContent = titolo;
+    titleDiv.classList.add('chapter-title');
     titleDiv.style.fontWeight = 'bold';
     titleDiv.style.color = 'black';
     titleDiv.style.fontSize = '4vw';
@@ -3724,32 +3719,43 @@ btnScience.addEventListener('click', () => {
 }
 
 
-  function updatePlusButtons() {
-    var rows = table.rows;
+function updatePlusButtonsForTable(targetTable) {
+    if (!targetTable) return;
+    var rows = targetTable.rows;
     for (var i = 0; i < rows.length; i++) {
-      var plusBtn = rows[i].cells[2]?.querySelector('button');
-      if (plusBtn) {
-        plusBtn.style.display = (i === rows.length - 1) ? 'inline-block' : 'none';
-      }
+        // Cerchiamo il bottone + nella terza cella (indice 2)
+        var plusBtn = rows[i].cells[2]?.querySelector('button');
+        if (plusBtn) {
+            // Se è l'ultima riga lo mostra, altrimenti lo nasconde
+            plusBtn.style.display = (i === rows.length - 1) ? 'inline-block' : 'none';
+        }
     }
-  }
+}
 
   // Se ci sono attività salvate
   if (attivita.length > 0) {
-    createTable();
-    table.style.display = 'none';
-    while (table.rows.length > 0) {
-      table.devareRow(0);
+    createTable(); 
+    // Recuperiamo la tabella appena creata
+    var currentTable = titleBtn.nextElementSibling; 
+    currentTable.style.display = 'none';
+
+    // Svuotiamo la tabella dalla riga vuota iniziale (CORRETTO: deleteRow)
+    while (currentTable.rows.length > 0) {
+      currentTable.deleteRow(0);
     }
 
+    // Inseriamo i capitoli salvati
     attivita.forEach(capitolo => {
       var row = createRow(capitolo.titolo);
-      var textarea = row.querySelector('textarea');
-      textarea.value = capitolo.contenuto || '';
-      table.appendChild(row);
+      var textarea = row.querySelector('textarea.save'); // Usa la classe .save
+      if (textarea) {
+        textarea.value = capitolo.contenuto || '';
+      }
+      currentTable.appendChild(row);
     });
 
-    updatePlusButtons();
+    // Aggiorniamo i bottoni + e - per questa specifica tabella
+    updatePlusButtonsForTable(currentTable);
   }
 }
 
@@ -5200,25 +5206,6 @@ function cancMemory()
  id_Card=0;
  matchedCount=0;
 }
-function functionNotAvailable()
-{
- if(funzionenondisponibile.style.display == 'none')
- {
-  setTimeout(() => {
-   funzionenondisponibile.style.display = 'none';
-  }, 3000);
-  funzionenondisponibile.style.display = 'block';
- }
-}
-window.onerror = function(message, source, lineno, colno, error)
-{
- if(message.includes("is not defined"))
- {
-  functionNotAvailable();
-  return true;
- }
- return false;
-};
 
 </script>
 </head>
@@ -13808,13 +13795,18 @@ function salvaDato(chiave, valore) {
   .catch((e) => console.error("❌ Errore:", e));
  }
 }
+
+if (!sessionStorage.getItem('ultimo_sync_time')) {
+    sessionStorage.setItem('ultimo_sync_time', Date.now());
+}
+
 async function caricaDatiDalCloud()
 {
  if(!dbRef)
  return;
  var ultimoSync = sessionStorage.getItem('ultimo_sync_time');
  var adesso = Date.now();
- if(ultimoSync && (adesso - ultimoSync < 10000))
+ if(ultimoSync && (adesso - ultimoSync < 20000)) 
  return;
  try{
   var snapshot = await dbRef.once('value');
@@ -13823,15 +13815,17 @@ async function caricaDatiDalCloud()
   {
    var datiCambiati = false;
    for(var chiave in datiCloud)
-   {
-    var valoreLocale = localStorage.getItem(chiave);
-    var valoreCloud = datiCloud[chiave];
-    if(String(valoreLocale).trim() !== String(valoreCloud).trim())
-    {
-     localStorage.setItem(chiave, valoreCloud);
-     datiCambiati = true;
-    }
-   }
+{
+  var valoreLocale = localStorage.getItem(chiave);
+  var valoreCloud = datiCloud[chiave];
+
+  // Confronto diretto senza forzature di stringa superflue
+  if(valoreLocale !== valoreCloud) 
+  {
+    localStorage.setItem(chiave, valoreCloud);
+    datiCambiati = true;
+  }
+}
    if(datiCambiati)
    {
     sessionStorage.setItem('ultimo_sync_time', Date.now());
@@ -13854,6 +13848,7 @@ async function syncTotaleSuCloud()
  }
  try {
   await dbRef.set(datiDaSalvare);
+  sessionStorage.setItem('ultimo_sync_time', Date.now());
  }
  catch (e) {} //Errore sync totale
 }
@@ -13880,50 +13875,80 @@ function mostraLoader(stato)
 {
  document.getElementById('loaderGlobale').style.display = stato ? 'flex' : 'none';
 }
-async function eseguiAccesso()
-{
- var email = document.getElementById('emailInput').value;
- var pass = document.getElementById('passInput').value;
- if(!email || !pass)
- {
-  mostraNotifica("Inserisci email e password");
-  return;
- }
- mostraLoader(true); // Appare il velo nero subito
- try {
-  await firebase.auth().signInWithEmailAndPassword(email, pass);
-  mostraNotifica("Accesso effettuato!");
- }
- catch (e) {
-  mostraNotifica("Errore: " + e.message);
- }
- finally
- {
-  mostraLoader(false); // Scompare il velo
- }
+async function eseguiAccesso() {
+    // 1. Prendi i valori e puliscili (il .trim() è vitale)
+    var email = document.getElementById('emailInput').value.trim();
+    var pass = document.getElementById('passInput').value;
+
+    // 2. IL FILTRO "SILENZIATORE"
+    // Qui controlliamo la mail PRIMA di chiamare Firebase.
+    // Se la mail è scritta male, mostriamo la notifica e USCIAMO col return.
+    if (!isEmailValida(email)) {
+        mostraNotifica("L'indirizzo email non è valido.");
+        return; // <--- QUESTO FERMA TUTTO. Firebase non viene chiamato.
+    }
+
+    // 3. Se la mail passa il controllo sopra, allora chiamiamo Firebase
+    mostraLoader(true);
+    try {
+        await firebase.auth().signInWithEmailAndPassword(email, pass);
+        mostraNotifica("Accesso effettuato!");
+    } catch (e) {
+        // Se arriviamo qui, la mail era scritta bene (es. "test@test.it") 
+        // ma magari la password era sbagliata o l'utente non esiste.
+        mostraNotifica("Email o password errate.");
+    } finally {
+        mostraLoader(false);
+    }
 }
-async function eseguiRegistrazione()
-{
- var email = document.getElementById('emailInput').value;
- var pass = document.getElementById('passInput').value;
- if(!email || !pass)
- {
-  mostraNotifica("Compila tutti i campi");
-  return;
- }
- mostraLoader(true);
- try {
-  await firebase.auth().createUserWithEmailAndPassword(email, pass);
-  await syncTotaleSuCloud();
-  mostraNotifica("Account creato!");
- }
- catch (e) {
-  mostraNotifica("Errore: " + e.message);
- }
- finally
- {
-  mostraLoader(false);
- }
+
+// Questa funzione deve stare fuori, così la console resta pulita
+function isEmailValida(email) {
+    var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+async function eseguiRegistrazione() {
+    // 1. Prendi i valori e usa .trim() per evitare errori dovuti a spazi vuoti accidentali
+    var email = document.getElementById('emailInput').value.trim();
+    var pass = document.getElementById('passInput').value;
+
+    // 2. Controllo campi vuoti
+    if (!email || !pass) {
+        mostraNotifica("Compila tutti i campi");
+        return;
+    }
+
+    // 3. IL FILTRO ANTI-ERRORE CONSOLE (Fondamentale!)
+    // Se la mail è formattata male, ci fermiamo PRIMA di chiamare Firebase
+    if (!isEmailValida(email)) {
+        mostraNotifica("Errore: Formato email non valido.");
+        return; // <--- Questo impedisce l'errore rosso in console
+    }
+
+    // 4. Controllo lunghezza minima password (standard Firebase)
+    if (pass.length < 6) {
+        mostraNotifica("La password deve avere almeno 6 caratteri.");
+        return; 
+    }
+
+    mostraLoader(true);
+    try {
+        await firebase.auth().createUserWithEmailAndPassword(email, pass);
+        await syncTotaleSuCloud();
+        mostraNotifica("Account creato!");
+    }
+    catch (e) {
+        // Qui gestiamo solo l'errore se la mail esiste già nel database
+        if (e.code === 'auth/email-already-in-use') {
+            mostraNotifica("Questa email è già registrata.");
+        } else {
+            mostraNotifica("Errore durante la registrazione.");
+        }
+        // console.log(e.code); // Opzionale, solo per tuo controllo
+    }
+    finally {
+        mostraLoader(false);
+    }
 }
 async function logoutSicuro()
 {
@@ -13944,24 +13969,29 @@ async function logoutSicuro()
     let messaggioItaliano = "";
 
     switch (error.code) {
-        case 'auth/invalid-email':
-            messaggioItaliano = "L'indirizzo email non è scritto correttamente.";
-            break;
-        case 'auth/user-not-found':
-            messaggioItaliano = "Non esiste un account con questa email.";
-            break;
-        case 'auth/wrong-password':
-            messaggioItaliano = "La password inserita è sbagliata.";
-            break;
-        case 'auth/too-many-requests':
-            messaggioItaliano = "Troppi tentativi falliti. Riprova più tardi.";
-            break;
-        case 'auth/network-request-failed':
-            messaggioItaliano = "Connessione internet assente o instabile.";
-            break;
-        default:
-            messaggioItaliano = "Errore durante l'accesso: " + error.message;
-    }
+    case 'auth/invalid-email':
+        messaggioItaliano = "L'indirizzo email non è scritto correttamente.";
+        break;
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential': // <--- AGGIUNGI QUESTO
+        messaggioItaliano = "Email o password non corrette.";
+        break;
+    case 'auth/too-many-requests':
+        messaggioItaliano = "Troppi tentativi falliti. L'accesso è temporaneamente bloccato.";
+        break;
+    case 'auth/network-request-failed':
+        messaggioItaliano = "Connessione internet assente o instabile.";
+        break;
+    case 'auth/email-already-in-use': // Utile se hai anche la registrazione
+        messaggioItaliano = "Questa email è già associata a un account.";
+        break;
+    case 'auth/weak-password':
+        messaggioItaliano = "La password deve contenere almeno 6 caratteri.";
+        break;
+    default:
+        messaggioItaliano = "Errore imprevisto. Riprova tra poco.";
+}
 
     mostraNotifica(messaggioItaliano);
 }
