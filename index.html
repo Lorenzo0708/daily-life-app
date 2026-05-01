@@ -65,88 +65,45 @@ var defaultMethod = button_options[option_number];
 
 
 window.onload = function() {
-    // 1. CARICAMENTO CLASSIFICA MEMORY CON CONTROLLI DI SICUREZZA
-    try {
-        let storedTimes = localStorage.getItem("timesList");
-        let storedNames = localStorage.getItem("namesList");
 
-        timesList = storedTimes ? JSON.parse(storedTimes) : [];
-        namesList = storedNames ? JSON.parse(storedNames) : [];
 
-        if (Array.isArray(timesList) && Array.isArray(namesList) && 
-            timesList.length > 0 && timesList.length === namesList.length) {
-            
-            var paired = timesList.map((t, i) => ({ 
-                name: namesList[i] || "Anonimo", 
-                time: t 
-            }));
-
-            paired.sort((a, b) => {
-                let timeA = a.time ? timeToMs(a.time) : 9999999;
-                let timeB = b.time ? timeToMs(b.time) : 9999999;
-                return timeA - timeB;
-            });
-
-            timesList = paired.map(p => p.time);
-            namesList = paired.map(p => p.name);
-            
-            if (typeof printTimes === "function") {
-                printTimes();
-            }
-        }
-    } catch (e) {
-        console.error("Errore classifica:", e);
-        timesList = [];
-        namesList = [];
+    // CARICAMENTO CLASSIFICA MEMORY
+    if (localStorage.getItem("timesList")) {
+        timesList = JSON.parse(localStorage.getItem("timesList"));
     }
 
-    // 2. GESTIONE CAMPI DATA (SOLO SE ESISTONO)
-    if (typeof dateFields !== 'undefined' && Array.isArray(dateFields)) {
-        dateFields.forEach(id => {
-            var input = document.getElementById(id);
-            if (input && typeof onlyNumbers === "function") {
-                onlyNumbers(input);
-            }
-        });
+    if (localStorage.getItem("namesList")) {
+        namesList = JSON.parse(localStorage.getItem("namesList"));
     }
 
-    // 3. AUTONEXT (CON CONTROLLO ESISTENZA ELEMENTI)
-    // Usiamo una piccola funzione di supporto interna per evitare errori se gli ID mancano
-    function safeAutoNext(id1, id2, len) {
-        var el1 = document.getElementById(id1);
-        var el2 = document.getElementById(id2);
-        if (el1 && el2 && typeof autoNext === "function") {
-            autoNext(el1, el2, len);
-        }
+    if(timesList.length > 0) {
+        var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
+        paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
+        timesList = paired.map(p => p.time);
+        namesList = paired.map(p => p.name);
+        printTimes();
     }
 
-    safeAutoNext("insgiornouno", "insmeseuno", 2);
-    safeAutoNext("insmeseuno", "insannouno", 2);
-    safeAutoNext("insgiornodue", "insmesedue", 2);
-    safeAutoNext("insmesedue", "insannodue", 2);
+  dateFields.forEach(id => {
+    var input = document.getElementById(id);
+    onlyNumbers(input);
+  });
 
-    // 4. GESTIONE OPZIONI E PULSANTI
-    try {
-        option_number = Number(localStorage.getItem("option_number") || 0);
+  autoNext(document.getElementById("insgiornouno"), document.getElementById("insmeseuno"), 2);
+  autoNext(document.getElementById("insmeseuno"), document.getElementById("insannouno"), 2);
+  autoNext(document.getElementById("insgiornodue"), document.getElementById("insmesedue"), 2);
+  autoNext(document.getElementById("insmesedue"), document.getElementById("insannodue"), 2);
 
-        // Verifica che button_options esista e che l'indice sia valido
-        if (typeof button_options !== 'undefined' && Array.isArray(button_options)) {
-            if (isNaN(option_number) || option_number < 0 || option_number >= button_options.length) {
-                option_number = 0;
-            }
-            defaultMethod = button_options[option_number];
-        }
+ option_number = Number(localStorage.getItem("option_number") || 0);
 
-        // Verifica modalità percentuale
-        if (typeof modeArray !== 'undefined' && Array.isArray(modeArray)) {
-            percentageMode = modeArray[option_number];
-        }
+    if (option_number < 0 || option_number >= button_options.length || isNaN(option_number)) {
+        option_number = 0;
+    }
 
-        // Scrittura sul pulsante (solo se la funzione esiste)
-        if (typeof writeOnDefaultButton === "function") {
-            writeOnDefaultButton();
-        }
-    } catch (e) {}
+    defaultMethod = button_options[option_number];
+
+    writeOnDefaultButton();
+    percentageMode=modeArray[option_number];
 };
 
 
@@ -13637,14 +13594,13 @@ if (!sessionStorage.getItem('ultimo_sync_time')) {
 }
 
 async function caricaDatiDalCloud(forza = false) {
-    if(!dbRef) return;
+    if(!dbRef) return false;
 
     var ultimoSync = sessionStorage.getItem('ultimo_sync_time');
     var adesso = Date.now();
 
-    // Se "forza" è true, saltiamo il controllo del tempo (utile al login)
     if(!forza && ultimoSync && (adesso - ultimoSync < 20000)) 
-        return;
+        return false;
 
     try {
         var snapshot = await dbRef.once('value');
@@ -13662,10 +13618,11 @@ async function caricaDatiDalCloud(forza = false) {
             }
             if(datiCambiati) {
                 sessionStorage.setItem('ultimo_sync_time', Date.now());
-                location.reload(); // Ricarica per applicare i nuovi record
+                return true; // Comunica che i dati sono nuovi
             }
         }
-    } catch (e) {}
+    } catch (e) { console.error(e); }
+    return false;
 }
 async function syncTotaleSuCloud()
 {
@@ -13708,26 +13665,30 @@ function mostraLoader(stato)
  document.getElementById('loaderGlobale').style.display = stato ? 'flex' : 'none';
 }
 async function eseguiAccesso() {
-    // 1. Prendi i valori e puliscili (il .trim() è vitale)
     var email = document.getElementById('emailInput').value.trim();
     var pass = document.getElementById('passInput').value;
 
-    // 2. IL FILTRO "SILENZIATORE"
-    // Qui controlliamo la mail PRIMA di chiamare Firebase.
-    // Se la mail è scritta male, mostriamo la notifica e USCIAMO col return.
     if (!isEmailValida(email)) {
         mostraNotifica("L'indirizzo email non è valido.");
-        return; // <--- QUESTO FERMA TUTTO. Firebase non viene chiamato.
+        return; 
     }
 
-    // 3. Se la mail passa il controllo sopra, allora chiamiamo Firebase
     mostraLoader(true);
     try {
+        // 1. Esegui il login
         await firebase.auth().signInWithEmailAndPassword(email, pass);
-        mostraNotifica("Accesso effettuato!");
+        
+        // 2. SCARICA I DATI (Forzando l'aggiornamento)
+        // Usiamo await così aspettiamo che finisca di salvare nel localStorage
+        await caricaDatiDalCloud(true);
+
+        mostraNotifica("Accesso effettuato! Caricamento...");
+
+        // 3. REFRESH DELLA PAGINA (Una volta sola)
+        // Questo farà apparire i dati scaricati nell'interfaccia
+        location.reload(); 
+
     } catch (e) {
-        // Se arriviamo qui, la mail era scritta bene (es. "test@test.it") 
-        // ma magari la password era sbagliata o l'utente non esiste.
         mostraNotifica("Email o password errate.");
     } finally {
         mostraLoader(false);
@@ -13803,16 +13764,16 @@ async function logoutSicuro() {
 
         // 4. RELOAD IMMEDIATO
         // Non usiamo setTimeout: più veloce ricarichiamo, meno l'utente vede "salti"
-        location.reload();
+        //location.reload();
 
     } catch (error) {
         console.error("Errore durante il logout:", error);
         // In caso di errore (es. rete assente), puliamo comunque il locale e forziamo il reload
         localStorage.clear();
-        location.reload();
+        //location.reload();
     }
 }
-//window.addEventListener('beforeunload', syncTotaleSuCloud);
+window.addEventListener('beforeunload', syncTotaleSuCloud);
 </script>
 <script>
 function aggiornaAvatar(email)
