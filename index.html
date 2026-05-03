@@ -64,6 +64,7 @@ var defaultMethod = button_options[option_number];
 
 
 
+
 window.onload = function() {
 
 
@@ -2359,7 +2360,7 @@ function addStudioLavoro(dataVal = '', titoloVal = '', statoVal = 'da_fare', not
  {
   var domani = new Date();
   domani.setDate(domani.getDate() + 1);
-  valoreData = domani.toISOString().split('T')[0];
+  dataVal = domani.toISOString().split('T')[0];
  }
  date.value = dataVal;
  date.addEventListener('input', salvaAttivita);
@@ -2503,9 +2504,15 @@ function addList(valList = '', coloreList = 'white')
  input = document.createElement('input');
  input.type = 'text';
  input.classList.add('save');
- input.style.width = '61vw';
+ input.style.width = '70%';
  input.style.height = '8vw';
- input.style.fontSize = '4.8vw';
+ input.style.fontSize = '4vw';
+ input.style.borderRadius = '2vw';
+ input.style.fontFamily = 'inherit';
+ input.style.padding = '2vw';
+ input.style.border = '0.2vw solid #eee';
+ input.style.backgroundColor = '#f9f9f9';
+ input.style.boxSizing = 'border-box';
  input.style.marginBottom = '2vw';
  input.placeholder = 'Es. pane, latte, uova...';
  input.value = valList;
@@ -2513,26 +2520,30 @@ function addList(valList = '', coloreList = 'white')
  check = document.createElement('button');
  check.textContent = '✓';
  check.classList.add('save', 'check');
- check.style.width = '7.9vw';
- check.style.height = '7.9vw';
- check.style.marginLeft = '1vw';
- check.style.fontSize = '4vw';
- check.style.marginBottome = '2vw';
+ check.style.width = '6.9vw';
+ check.style.height = '6.9vw';
+ check.style.marginLeft = '2vw';
+ check.style.fontSize = '3.5vw';
+ check.style.borderRadius = '2vw';
+ check.style.border = 'none';
+ check.style.cursor = 'pointer';
+ check.style.boxShadow = '0 0.5vw 1vw rgba(0,0,0,0.1)';
  check.style.backgroundColor = coloreList;
  check.addEventListener('click', () => {
   check.style.backgroundColor = (check.style.backgroundColor == 'white') ? 'cyan' : 'white';
   salvaLista();
  });
  button = document.createElement('button');
- button.textContent = '-';
- button.style.width = '5vw';
- button.style.height = '5vw';
- button.style.border = '0.1vw solid black';
+ button.textContent = '✕';
+ button.style.width = '6vw';
+ button.style.height = '6vw';
+ button.style.marginLeft = '2vw';
+ button.style.border = 'none';
  button.style.borderRadius = '50%';
- button.style.marginLeft = '3vw';
- button.style.backgroundColor = 'yellow';
- button.style.fontSize = '4.5vw';
- button.style.marginBottom = '0vw';
+ button.style.backgroundColor = '#ff4d4d';
+ button.style.color = 'white';
+ button.style.fontSize = '3.5vw';
+ button.style.cursor = 'pointer';
  button.style.userSelect = 'none';
  button.style.webkitUserSelect = 'none';
  button.style.msUserSelect = 'none';
@@ -2577,6 +2588,7 @@ function addList(valList = '', coloreList = 'white')
  riga.appendChild(check);
  riga.appendChild(button);
  container.prepend(riga);
+ input.focus();
  l++;
  listanumber.value = +l;
  salvaLista();
@@ -2903,7 +2915,7 @@ sfondoopaco.style.display = 'block';
   if (attivita.length > 0) {
     createTable();
     table.style.display = 'none';
-    while (table.rows.length > 0) table.devareRow(0);
+    while (table.rows.length > 0) table.deleteRow(0);
     attivita.forEach(desc => {
       var row = createRow();
       row.cells[0].querySelector('textarea').value = desc;
@@ -3673,120 +3685,68 @@ function updatePlusButtonsForTable(targetTable) {
 function cleanAllNotes() {
   var container = document.getElementById('container5');
 
+  // Controllo se il contenitore è vuoto
   if (container.children.length == 0) {
     divvuoto.style.display = 'block';
-    setTimeout(() => {
-      divvuoto.style.display = 'none';
-    }, 3000);
+    setTimeout(() => { divvuoto.style.display = 'none'; }, 3000);
     return;
   }
 
-  // OVERLAY
+  // OVERLAY (Sfondo scuro)
   var overlay = document.createElement('div');
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100vw';
-  overlay.style.height = '100dvh'; // importante per smartphone
-  overlay.style.display = 'flex';
-  overlay.style.alignItems = 'center';
-  overlay.style.justifyContent = 'center';
-  overlay.style.backgroundColor = 'rgba(0,0,0,0.4)';
-  overlay.style.zIndex = '10000';
-
+  overlay.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; display: flex; align-items: center; justify-content: center; backgroundColor: rgba(0,0,0,0.4); z-index: 10000;";
   document.body.style.overflow = "hidden";
+  sfondoopaco2.style.display = 'block';
 
-  // POPUP
+  // POPUP (Contenitore principale)
   var confirmDiv = document.createElement('div');
   confirmDiv.id = 'confermapuliscipagina';
-  confirmDiv.style.width = '90vw';
-  confirmDiv.style.height = '45vw';
-  confirmDiv.style.backgroundColor = '#d7d7d7';
-  confirmDiv.style.color = 'black';
-  confirmDiv.style.borderRadius = '3vw';
-  confirmDiv.style.position = 'relative';
-  confirmDiv.style.zIndex = '10001';
+  confirmDiv.style.cssText = "position: relative; width: 85vw; padding: 6vw; background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10001; font-family: sans-serif; text-align: center; box-sizing: border-box;";
 
-  // Bottone chiudi ❌
+  // Bottone chiudi ✕ (Rosso Professionale)
   var closeBtn = document.createElement('input');
   closeBtn.type = 'button';
-  closeBtn.value = '❌';
-  closeBtn.style.position = 'absolute';
-  closeBtn.style.top = '1vw';
-  closeBtn.style.right = '2vw';
-  closeBtn.style.width = '6vw';
-  closeBtn.style.height = '6vw';
-  closeBtn.style.fontSize = '3vw';
-  closeBtn.style.backgroundColor = '#d7d7d7';
-  closeBtn.style.border = 'none';
-  closeBtn.style.zIndex = '10000';
-  closeBtn.onclick = () => {
-    overlay.remove();
-    document.body.style.overflow = "";
-    sfondoopaco2.style.display = 'none';
-  };
-  confirmDiv.appendChild(closeBtn);
+  closeBtn.value = '✕';
+  closeBtn.style.cssText = "position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent;";
+  closeBtn.onclick = () => { overlay.remove(); document.body.style.overflow = ""; sfondoopaco2.style.display = 'none'; };
 
-  // Testo centrale
+  // Testo del messaggio
   var p = document.createElement('p');
-  p.innerHTML = 'Vuoi cancellare i contenuti<br>di questa pagina?';
-  p.style.position = 'absolute';
-  p.style.bottom = '16vw';
-  p.style.width = '100%';
-  p.style.fontSize = '6vw';
-  p.style.fontWeight = 'bold';
-  p.style.textAlign = 'center';
-  confirmDiv.appendChild(p);
+  p.innerHTML = 'Vuoi cancellare i<br>contenuti di questa pagina?';
+  p.style.cssText = "font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;";
+
+  // Contenitore Flex per i bottoni
+  var btnContainer = document.createElement('div');
+  btnContainer.style.cssText = "display: flex; justify-content: space-between; gap: 4vw;";
 
   // Bottone ANNULLA
   var cancelBtn = document.createElement('input');
   cancelBtn.type = 'button';
   cancelBtn.value = 'ANNULLA';
-  cancelBtn.style.position = 'absolute';
-  cancelBtn.style.bottom = '3vw';
-  cancelBtn.style.left = '9.5vw';
-  cancelBtn.style.width = '30vw';
-  cancelBtn.style.height = '12vw';
-  cancelBtn.style.fontSize = '4.5vw';
-  cancelBtn.style.fontWeight = 'bold';
-  cancelBtn.style.backgroundColor = '#90caf9';
-  cancelBtn.style.border = '0.2vw solid black';
-  cancelBtn.style.borderRadius = '5vw';
-  cancelBtn.style.zIndex = 10000;
-  cancelBtn.onclick = () => {
-    overlay.remove();
-    sfondoopaco2.style.display = 'none';
-  };
-  confirmDiv.appendChild(cancelBtn);
+  cancelBtn.style.cssText = "flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #f0f0f0; color: #555; border: none; border-radius: 3vw; cursor: pointer;";
+  cancelBtn.onclick = () => { overlay.remove(); document.body.style.overflow = ""; sfondoopaco2.style.display = 'none'; };
 
-  // Bottone CONFERMA
+  // Bottone CONFERMA (Rosso)
   var confirmBtn = document.createElement('input');
   confirmBtn.type = 'button';
   confirmBtn.value = 'CONFERMA';
-  confirmBtn.style.position = 'absolute';
-  confirmBtn.style.bottom = '3vw';
-  confirmBtn.style.right = '9.5vw';
-  confirmBtn.style.width = '30vw';
-  confirmBtn.style.height = '12vw';
-  confirmBtn.style.fontSize = '4.5vw';
-  confirmBtn.style.fontWeight = 'bold';
-  confirmBtn.style.backgroundColor = 'rgb(0,220,0)';
-  confirmBtn.style.border = '0.2vw solid black';
-  confirmBtn.style.borderRadius = '5vw';
-  confirmBtn.style.zIndex = 10000;
+  confirmBtn.style.cssText = "flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #ff4d4d; color: white; border: none; border-radius: 3vw; cursor: pointer; box-shadow: 0 1vw 3vw rgba(255, 77, 77, 0.3);";
   confirmBtn.onclick = () => {
     container.innerHTML = '';
-    salvaNote(); // salva nel localStorage
+    if (typeof salvaNote === "function") salvaNote(); // Esegue salvataggio se esiste la funzione
     overlay.remove();
-    sfondoopaco2.style.display = 'none';
     document.body.style.overflow = "";
+    sfondoopaco2.style.display = 'none';
   };
-  confirmDiv.appendChild(confirmBtn);
 
+  // Assemblaggio
+  btnContainer.appendChild(cancelBtn);
+  btnContainer.appendChild(confirmBtn);
+  confirmDiv.appendChild(closeBtn);
+  confirmDiv.appendChild(p);
+  confirmDiv.appendChild(btnContainer);
   overlay.appendChild(confirmDiv);
   document.body.appendChild(overlay);
-
-  sfondoopaco2.style.display = 'block';
 }
 
 
@@ -9531,26 +9491,34 @@ function explainModesMenu(par)
 
 
 
-<div id="confermapuliscipagina" style="display: none; position: fixed; width: 90vw; height: 45vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #d7d7d7; color: black; border-radius: 3vw; z-index: 10000">
-  <input type="button" name="closeconfermapuliscipagina" id="closeconfermapuliscipagina" style="position: absolute; background-color: #d7d7d7; width: 6vw; height: 4vw; font-size: 2.5vw; margin-left: 35vw; margin-top: 1vw; border: none" value="❌" onClick="document.getElementById('confermapuliscipagina').style.display='none'; sfondoopaco2.style.display='none';">
-  <p style="height: 8vw; font-size: 6vw; font-weight: bold; margin-top: 6vw; margin-bottom: 15vw">Vuoi cancellare i<br>
-contenuti di questa pagina?
+
+<div id="confermapuliscipagina" style="display: none; position: fixed; width: 85vw; padding: 6vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10000; font-family: sans-serif; text-align: center; box-sizing: border-box">
+<input type="button" name="closeconfermapuliscipagina" id="closeconfermapuliscipagina" style="position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent" value="✕" onClick="confermapuliscipagina'.style.display='none'; sfondoopaco2.style.display='none';">
+<p style="font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;">
+Vuoi cancellare i<br>contenuti di questa pagina?
 </p>
-<input type="button" name="annullapuliscipagina" id="annullapuliscipagina" style="width: 30vw; height: 12vw; font-size: 4.5vw; font-weight: bold; background-color: #90caf9; border: 0.2vw solid black; border-radius: 5vw; margin-right: 10vw; z-index: 10000" value="ANNULLA" onClick="document.getElementById('confermapuliscipagina').style.display='none'; sfondoopaco2.style.display='none';">
-<input type="button" name="confermaBtnpuliscipagina" id="confermaBtnpuliscipagina" style="position: relative; width: 30vw; height: 12vw; font-size: 4.5vw; font-weight: bold; background-color: rgb(0,220,0); border: 0.2vw solid black; border-radius: 5vw; margin-left: 0vw; z-index: 10000" value="CONFERMA" onClick="cancByConfirm(); confermapuliscipagina.style.display = 'none';">
+<div style="display: flex; justify-content: space-between; gap: 4vw">
+<input type="button"name="annullapuliscipagina" id="annullapuliscipagina" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #f0f0f0; color: #555; border: none; border-radius: 3vw; cursor: pointer" value="ANNULLA" onClick="confermapuliscipagina.style.display='none'; sfondoopaco2.style.display='none';">
+<input type="button" name="confermaBtnpuliscipagina" id="confermaBtnpuliscipagina" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #ff4d4d; color: white; border: none; border-radius: 3vw; cursor: pointer; box-shadow: 0 1vw 3vw rgba(255, 77, 77, 0.3)" value="CONFERMA" onClick="cancByConfirm(); confermapuliscipagina.style.display='none'; sfondoopaco2.style.display='none';">
+</div>
 </div>
 
 
-<div id="divvuoto" style="display: none; position: fixed; width: 80vw; height: 40vw; font-size: 4vw; font-weight: bold; background-color: gray; border-radius: 4vw; z-index: 10000; top: 75%; left: 50%; transform: translate(-50%, -50%)">
-<button style="width: 80vw; height: 40vw; font-size: 5vw; font-weight: bold; color: white; background-color: gray; border-radius: 4vw; border: none" onClick="divvuoto.style.display = 'none';"> Non è presente alcun<br>
+<div id="divvuoto" style="display: none; position: fixed; width: 80vw; top: 70%; left: 50%; transform: translate(-50%, -50%); background-color: #323232; border-radius: 3vw; box-shadow: 0 4vw 8vw rgba(0,0,0,0.3); z-index: 10000; overflow: hidden; font-family: sans-serif">
+<button style="width: 100%; padding: 6vw 4vw; font-size: 4.5vw; font-weight: 500; color: #ffffff; background-color: transparent; border: none; cursor: pointer; line-height: 1.4; -webkit-tap-highlight-color: transparent" onClick="divvuoto.style.display = 'none';"> Non è presente alcun<br>
 elemento da cancellare
+</button>
+</div>
+
+<div id="funzioneincompleta" style="display: none; position: fixed; width: 80vw; top: 70%; left: 50%; transform: translate(-50%, -50%); background-color: #323232; border-radius: 3vw; box-shadow: 0 4vw 8vw rgba(0,0,0,0.3); z-index: 10000; overflow: hidden; font-family: sans-serif">
+<button style="width: 100%; padding: 6vw 4vw; font-size: 4.5vw; font-weight: 500; color: #ffffff; background-color: transparent; border: none; cursor: pointer; line-height: 1.4; -webkit-tap-highlight-color: transparent" onClick="funzioneincompleta.style.display = 'none';"> Funzione ancora in fase di sviluppo
 </button>
 </div>
 
 
 
-<div id="comeeliminarecontenuto" style="display: none; position: fixed; width: 80vw; height: 40vw; font-size: 4vw; font-weight: bold; background-color: gray; border-radius: 4vw; z-index: 10000; top: 75%; left: 50%; transform: translate(-50%, -50%)">
-<button style="width: 80vw; height: 40vw; font-size: 5vw; font-weight: bold; color: white; background-color: gray; border-radius: 4vw; border: none" onClick="comeeliminarecontenuto.style.display = 'none';"> Tieni premuto a lungo il<br>
+<div id="comeeliminarecontenuto" style="display: none; position: fixed; width: 80vw; top: 70%; left: 50%; transform: translate(-50%, -50%); background-color: #323232; border-radius: 3vw; box-shadow: 0 4vw 8vw rgba(0,0,0,0.3); z-index: 10000; overflow: hidden; font-family: sans-serif">
+<button style="width: 100%; padding: 6vw 4vw; font-size: 4.5vw; font-weight: 500; color: #ffffff; background-color: transparent; border: none; cursor: pointer; line-height: 1.4; -webkit-tap-highlight-color: transparent" onClick="comeeliminarecontenuto.style.display = 'none';"> Tieni premuto a lungo il<br>
 pulsante per eliminare il contenuto
 </button>
 </div>
@@ -9648,7 +9616,7 @@ LISTA
 </button>
 </th>
 <th>
-<button style="width: 30vw; height: 40vw; background: linear-gradient(to bottom, #e85a5a, #ffb3b3); margin-left: 3vw; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 5vw; padding-bottom: 8vw; border: 0.3vw solid #000; border-radius: 2vw; box-shadow: 0 1vw 2vw rgba(0,0,0,0.18); font-family: sans-serif" onClick="showSport();">
+<button style="width: 30vw; height: 40vw; background: linear-gradient(to bottom, #e85a5a, #ffb3b3); margin-left: 3vw; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 5vw; padding-bottom: 8vw; border: 0.3vw solid #000; border-radius: 2vw; box-shadow: 0 1vw 2vw rgba(0,0,0,0.18); font-family: sans-serif" onClick="funzioneincompleta.style.display = 'block';">
 <span style="font-size: 3.5vw;  font-weight: bold;  color: white;  text-shadow: 0.3vw 0.3vw 1vw rgba(0,0,0,0.3)">
 SPORT
 </span>
@@ -10771,10 +10739,10 @@ ATTIVITÀ
 </td>
 <td>
 <button style="width: 40vw; height: 55vw; background: linear-gradient(to bottom, #e85a5a, #ffb3b3); margin-left: 3vw; margin-top: 7vw; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 5vw; padding-bottom: 5vw; border: 0.3vw solid #000; border-radius: 2vw; box-shadow: 0 1vw 2vw rgba(0,0,0,0.18); font-family: sans-serif">
-<span style="font-size: 5vw; font-weight: bold; color: white; text-shadow: 0.3vw 0.3vw 1vw rgba(0,0,0,0.3)" onClick="showNotes();">
+<span style="font-size: 5vw; font-weight: bold; color: white; text-shadow: 0.3vw 0.3vw 1vw rgba(0,0,0,0.3)" onClick="funzioneincompleta.style.display = 'block';">
 APPUNTI
 </span>
-<input name="appuntirapidi" id="appuntirapidi" style="width: 25vw; height: 25vw; background-color:transparent; font-size: 18vw; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; margin-top: 7.5vw" value="📝" onClick="event.stopPropagation(); showFastNotes();">
+<input name="appuntirapidi" id="appuntirapidi" style="width: 25vw; height: 25vw; background-color:transparent; font-size: 18vw; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; margin-top: 7.5vw" value="📝" onClick="event.stopPropagation(); funzioneincompleta.style.display = 'block';">
 </button>
 
 </td>
@@ -10790,7 +10758,7 @@ APPUNTI
 <tr>
 <th>
 <div id="giochi" style="width: 60vw; height: 65vw; background: linear-gradient(to bottom, #e85a5a, #ffb3b3); margin-top: 7vw; flex-direction: column; align-items: center; border: 0.2vw solid black; border-radius: 2vw; padding-top: 6vw">
-<span style="font-size: 5vw; font-weight: bold; color: white; text-shadow: 0.3vw 0.3vw 1vw rgba(0,0,0,0.3); margin-top: 3vw; margin-bottom: 2vw; font-family: sans-serif" onClick="showNotes();">
+<span style="font-size: 5vw; font-weight: bold; color: white; text-shadow: 0.3vw 0.3vw 1vw rgba(0,0,0,0.3); margin-top: 3vw; margin-bottom: 2vw; font-family: sans-serif">
 GIOCHI
 </span>
 <table style="margin-left: 3vw">
