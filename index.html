@@ -59,6 +59,7 @@ var option_number = Number(localStorage.getItem("option_number"));
 if(isNaN(option_number) || option_number < 0 || option_number >= button_options.length)
 option_number = 0;
 var defaultMethod = button_options[option_number];
+var currentSessionId = "ID_" + Math.random().toString(16).slice(2);
 
 
 
@@ -66,9 +67,7 @@ var defaultMethod = button_options[option_number];
 
 
 window.onload = function() {
-
-
-    // CARICAMENTO CLASSIFICA MEMORY
+    // 1. CARICAMENTO CLASSIFICA MEMORY (Il tuo codice originale)
     if (localStorage.getItem("timesList")) {
         timesList = JSON.parse(localStorage.getItem("timesList"));
     }
@@ -77,7 +76,7 @@ window.onload = function() {
         namesList = JSON.parse(localStorage.getItem("namesList"));
     }
 
-    if(timesList.length > 0) {
+    if(timesList && timesList.length > 0) {
         var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
         paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
         timesList = paired.map(p => p.time);
@@ -85,27 +84,46 @@ window.onload = function() {
         printTimes();
     }
 
-  dateFields.forEach(id => {
-    var input = document.getElementById(id);
-    onlyNumbers(input);
-  });
+    // 2. GESTIONE CAMPI DATA (Il tuo codice originale)
+    dateFields.forEach(id => {
+        var input = document.getElementById(id);
+        if(input) onlyNumbers(input);
+    });
 
-  autoNext(document.getElementById("insgiornouno"), document.getElementById("insmeseuno"), 2);
-  autoNext(document.getElementById("insmeseuno"), document.getElementById("insannouno"), 2);
-  autoNext(document.getElementById("insgiornodue"), document.getElementById("insmesedue"), 2);
-  autoNext(document.getElementById("insmesedue"), document.getElementById("insannodue"), 2);
+    autoNext(document.getElementById("insgiornouno"), document.getElementById("insmeseuno"), 2);
+    autoNext(document.getElementById("insmeseuno"), document.getElementById("insannouno"), 2);
+    autoNext(document.getElementById("insgiornodue"), document.getElementById("insmesedue"), 2);
+    autoNext(document.getElementById("insmesedue"), document.getElementById("insannodue"), 2);
 
- option_number = Number(localStorage.getItem("option_number") || 0);
+    // 3. OPZIONI E METODO DI DEFAULT (Il tuo codice originale)
+    option_number = Number(localStorage.getItem("option_number") || 0);
 
     if (option_number < 0 || option_number >= button_options.length || isNaN(option_number)) {
         option_number = 0;
     }
 
     defaultMethod = button_options[option_number];
-
     writeOnDefaultButton();
-    percentageMode=modeArray[option_number];
+    
+    // Controlla che modeArray esista per evitare errori
+    if(typeof modeArray !== 'undefined') {
+        percentageMode = modeArray[option_number];
+    }
 };
+
+
+function bloccaAccessoMultiplo() {
+    document.body.innerHTML = `
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:#1e3c72; color:white; display:flex; align-items:center; justify-content:center; z-index:999999; font-family:sans-serif; text-align:center;">
+            <div style="padding:30px; background:rgba(0,0,0,0.3); border:2px solid white; border-radius:20px; max-width:80%;">
+                <h1 style="font-size:50px; margin:0;">⚠️</h1>
+                <h2 style="margin:10px 0;">Impossibile accedere!</h2>
+                <p>L'app è già in uso su un altro dispositivo o browser con questa mail.</p>
+                <button onclick="location.reload()" style="margin-top:20px; padding:12px 25px; cursor:pointer; border:none; border-radius:50px; font-weight:bold; background:white; color:#1e3c72;">USA QUI</button>
+            </div>
+        </div>`;
+    window.stop(); 
+}
 
 
 
@@ -1419,11 +1437,13 @@ function showTable()
  {
   giochi.style.display = 'none';
   showtabella.style.display = 'block';
+  simboloEmail.style.display = 'none';
  }
  else
  {
   giochi.style.display = 'block';
   showtabella.style.display = 'none';
+  simboloEmail.style.display = 'block';
  }
 }
 document.addEventListener("DOMContentLoaded", function () {
@@ -10687,7 +10707,7 @@ MEMORY
 </button>
 <button id="calcoloBMI" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showJetLag();"> FUSO ORARIO
 </button>
-<button id="calcolopercentuali" style="width: 70vw; height: 25vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showPercentageCalculation();"> CALCOLO<br>
+<button id="calcolopercentuali" style="width: 70vw; height: 25vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="/*showPercentageCalculation();*/ funzioneincompleta.style.display = 'block';"> CALCOLO<br>
 PERCENTUALI
 </button>
 </div>
@@ -13618,7 +13638,7 @@ function chiudiPannello()
  document.getElementById('pannelloAccount').style.display = 'none';
 }
 var dbRef = null;
-firebase.auth().onAuthStateChanged(async (user) => { // Aggiunto async qui
+firebase.auth().onAuthStateChanged(async (user) => {
     var infoEmailPnl = document.getElementById('infoEmailPannello');
     var opzioniGuest = document.getElementById('opzioniGuest');
     var opzioniUser = document.getElementById('opzioniUser');
@@ -13626,6 +13646,29 @@ firebase.auth().onAuthStateChanged(async (user) => { // Aggiunto async qui
     var loader = document.getElementById('loaderGlobale');
 
     if(user) {
+        // --- LOGICA SESSIONE UNICA ---
+        localStorage.setItem("user_email", user.email);
+        var emailKey = user.email.replace(/\./g, ',');
+        // USARE SEMPRE QUESTO PERCORSO: active_sessions
+        var sessionRef = firebase.database().ref('active_sessions/' + emailKey);
+
+        // A. Diciamo al cloud: "Ora ci sono io!"
+        sessionRef.set({
+            id: currentSessionId,
+            time: Date.now()
+        });
+
+        // B. Ascoltiamo: se l'ID cambia, blocchiamo questo dispositivo
+        sessionRef.on('value', (snapshot) => {
+            var data = snapshot.val();
+            if (data && data.id !== currentSessionId) {
+                // Rimuoviamo il listener prima di bloccare per evitare loop
+                sessionRef.off();
+                bloccaAccessoMultiplo();
+            }
+        });
+
+        // --- RESTO DEL TUO CODICE ---
         dbRef = firebase.database().ref('users/' + user.uid + '/dati');
         aggiornaAvatar(user.email);
         
@@ -13637,27 +13680,22 @@ firebase.auth().onAuthStateChanged(async (user) => { // Aggiunto async qui
         chiudiPannello(); 
 
         try {
-            // Usiamo 'true' per forzare il download ignorando il timer dei 20 secondi
             await caricaDatiDalCloud(true); 
         } catch (e) {
-            console.error("Errore durante il recupero dati:", e);
+            console.error("Errore:", e);
         } finally {
-            // Nascondiamo il loader in ogni caso, così l'app non resta bloccata
             if (loader) loader.style.display = 'none';
         }
 
     } else {
+        // Logica Guest (codice originale)
         dbRef = null;
         if(infoEmailPnl) infoEmailPnl.innerText = "Effettua l'accesso per continuare";
         if(opzioniGuest) opzioniGuest.style.display = "block";
         if(opzioniUser) opzioniUser.style.display = "none";
         if(btnChiudi) btnChiudi.style.setProperty('display', 'none', 'important');
-        
         document.getElementById('inizialeAvatar').innerText = "?";
-        document.getElementById('simboloEmail').style.backgroundColor = "rgba(255,255,255,0.25)";
-        
         apriPannello();
-
         if (loader) loader.style.display = 'none';
     }
 });
