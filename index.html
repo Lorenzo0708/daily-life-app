@@ -61,12 +61,16 @@ option_number = 0;
 var defaultMethod = button_options[option_number];
 var currentSessionId = "ID_" + Math.random().toString(16).slice(2);
 
-
+// Se il valore nel storage non è 'false' allora è true (default attivo)
+var interactionSoundEffects = localStorage.getItem('interactionSoundEffects') != 'false';
+var gamesMusic = localStorage.getItem('gamesMusic') != 'false';
+var mobileVibration = localStorage.getItem('mobileVibration') != 'false';
 
 
 
 
 window.onload = function() {
+
     // 1. CARICAMENTO CLASSIFICA MEMORY (Il tuo codice originale)
     if (localStorage.getItem("timesList")) {
         timesList = JSON.parse(localStorage.getItem("timesList"));
@@ -109,6 +113,12 @@ window.onload = function() {
     if(typeof modeArray !== 'undefined') {
         percentageMode = modeArray[option_number];
     }
+ 
+
+ checkClick.checked = interactionSoundEffects;
+ checkSottofondo.checked = gamesMusic;
+ checkVibrazione.checked = mobileVibration;
+
 };
 
 
@@ -126,6 +136,26 @@ function bloccaAccessoMultiplo() {
 }
 
 
+
+
+
+function applySettings()
+{
+ interactionSoundEffects = checkClick.checked;
+ gamesMusic = checkSottofondo.checked;
+ mobileVibration = checkVibrazione.checked;
+ localStorage.setItem('interactionSoundEffects', interactionSoundEffects);
+ localStorage.setItem('gamesMusic', gamesMusic);
+ localStorage.setItem('mobileVibration', mobileVibration);
+ 
+}
+
+
+function playMusic()
+{
+ if(gamesMusic==true)
+ playSoundtrack();
+}
 
 
 function writeOnDefaultButton()
@@ -570,12 +600,14 @@ function showCalc()
   giochi.style.display = 'none';
   containercalc.style.display = 'block';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   containercalc.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showOnly(...daMostrare) {
@@ -1438,12 +1470,14 @@ function showTable()
   giochi.style.display = 'none';
   showtabella.style.display = 'block';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   giochi.style.display = 'block';
   showtabella.style.display = 'none';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 document.addEventListener("DOMContentLoaded", function () {
@@ -1467,12 +1501,14 @@ function showHomeWorks()
   compiti.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   compiti.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showPromemoria()
@@ -1482,12 +1518,14 @@ function showPromemoria()
   promemoria.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   promemoria.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showActivity()
@@ -1497,12 +1535,14 @@ function showActivity()
   activity.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   activity.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
  container3.style.display = 'none';
  containerSL.style.display = 'none';
@@ -1655,12 +1695,14 @@ function showNotes()
   appunti.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   appunti.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showFastNotes()
@@ -1671,6 +1713,7 @@ function showFastNotes()
   appuntirapidi.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
   setTimeout(() => {
    var ta = document.getElementById('testoappuntirapidi');
    ta.focus();
@@ -1682,6 +1725,7 @@ function showFastNotes()
   appuntirapidi.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function getSaveAndSost()
@@ -1692,6 +1736,7 @@ function getSaveAndSost()
   casellasalva.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
@@ -1699,6 +1744,7 @@ function getSaveAndSost()
   casellasalva.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showSections(a)
@@ -1745,12 +1791,14 @@ function showTris()
   trisdiv.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   trisdiv.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 } 
 function onWithSostTitle()
@@ -1767,12 +1815,14 @@ function showHanged()
   impiccatodiv.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   impiccatodiv.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showKeyboardForHanged()
@@ -1789,12 +1839,14 @@ function showMastermind()
   masterminddiv.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   masterminddiv.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showMemory()
@@ -1804,12 +1856,14 @@ function showMemory()
   memorydiv.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   memorydiv.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function showMore()
@@ -1821,12 +1875,14 @@ function showMore()
   altrodiv.style.display = 'block';
   giochi.style.display = 'none';
   simboloEmail.style.display = 'none';
+  btnImpostazioni.style.display = 'none';
  }
  else
  {
   altrodiv.style.display = 'none';
   giochi.style.display = 'block';
   simboloEmail.style.display = 'block';
+  btnImpostazioni.style.display = 'block';
  }
 }
 function salvaCompiti()
@@ -2994,120 +3050,129 @@ function addNotes(titolo = 'Titolo', attivita = [], id = null) {
 
     pressTimer = setTimeout(() => {
   isLongPress = true;
-  
+ 
   // Mostra sfondo e finestra di conferma
   sfondoopaco.style.display = 'block';
   document.body.style.overflow = 'hidden';
   // Mostra il div di conferma eliminazione
 
+// 1. Creazione dell'OVERLAY (il velo che copre tutto lo schermo)
 var overlay = document.createElement('div');
+overlay.id = 'dynamic_overlay_container';
 overlay.style.position = 'fixed';
 overlay.style.top = '0';
 overlay.style.left = '0';
 overlay.style.width = '100vw';
-overlay.style.height = '100dvh'; // importantissimo per smartphone
-overlay.style.display = 'flex';
-overlay.style.alignItems = 'center';
-overlay.style.justifyContent = 'center';
-overlay.style.backgroundColor = 'rgba(0,0,0,0.4)';
+overlay.style.height = '100vh';
 overlay.style.zIndex = '10000';
+overlay.style.display = 'flex';          // Fondamentale per centrare
+overlay.style.alignItems = 'center';     // Centra verticalmente
+overlay.style.justifyContent = 'center'; // Centra orizzontalmente
+overlay.style.backgroundColor = 'rgba(0,0,0,0.1)'; // Opzionale: un leggero oscuramento
 
-
-
+// 2. Il BOX della Modale
 var confirmDiv = document.createElement('div');
-confirmDiv.id = 'confermaelimina_dynamic';
-confirmDiv.style.width = '90vw';
-confirmDiv.style.height = '35vw';
-confirmDiv.style.backgroundColor = '#d7d7d7';
-confirmDiv.style.color = 'black';
-confirmDiv.style.borderRadius = '3vw';
-confirmDiv.style.zIndex = 10000;
-confirmDiv.style.position = 'relative';
-confirmDiv.style.width = '90vw';
-confirmDiv.style.height = '35vw';
+confirmDiv.id = 'confermaeliminacontenuto';
+confirmDiv.style.position = 'relative';  // Relative serve solo come riferimento per la X
+confirmDiv.style.width = '85vw';
+confirmDiv.style.padding = '6vw';
+confirmDiv.style.backgroundColor = '#ffffff';
+confirmDiv.style.borderRadius = '6vw';
+confirmDiv.style.boxShadow = '0 4vw 10vw rgba(0,0,0,0.3)';
+confirmDiv.style.fontFamily = 'sans-serif';
+confirmDiv.style.textAlign = 'center';
+confirmDiv.style.boxSizing = 'border-box';
 
-// Bottone chiudi ❌
-
+// 3. Bottone di chiusura (X)
 var closeBtn = document.createElement('input');
 closeBtn.type = 'button';
-closeBtn.value = '❌';
+closeBtn.value = '✕';
 closeBtn.style.position = 'absolute';
-closeBtn.style.top = '1vw';
-closeBtn.style.right = '2vw';
-closeBtn.style.width = '6vw';
-closeBtn.style.height = '6vw';
-closeBtn.style.fontSize = '3vw';
-closeBtn.style.backgroundColor = '#d7d7d7';
+closeBtn.style.top = '3vw';
+closeBtn.style.right = '3vw';
+closeBtn.style.width = '8vw';
+closeBtn.style.height = '8vw';
+closeBtn.style.backgroundColor = '#fff5f5';
 closeBtn.style.border = 'none';
-closeBtn.style.zIndex = 10000;
-
+closeBtn.style.borderRadius = '50%';
+closeBtn.style.fontSize = '4vw';
+closeBtn.style.fontWeight = 'bold';
+closeBtn.style.color = '#ff4d4d';
+closeBtn.style.cursor = 'pointer';
 closeBtn.onclick = () => {
-  overlay.remove();
-  sfondoopaco.style.display = 'none';
+    overlay.remove();
+    if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
-confirmDiv.appendChild(closeBtn);
 
-// Testo centrale
+// 4. Messaggio di testo
 var p = document.createElement('p');
-p.textContent = 'Vuoi eliminare questi appunti?';
-p.style.position = 'absolute';
-p.style.bottom = '14vw';
-p.style.width = '100%';
-p.style.fontSize = '6vw';
-p.style.fontWeight = 'bold';
-p.style.textAlign = 'center';
-confirmDiv.appendChild(p);
+p.innerHTML = 'Cancellare definitivamente<br>questo contenuto?';
+p.style.fontSize = '5.5vw';
+p.style.lineHeight = '1.4';
+p.style.fontWeight = '600';
+p.style.margin = '4vw 0 8vw 0'; // Margini corretti
+p.style.color = '#222';
 
-// Bottone ANNULLA
+// 5. Contenitore dei bottoni
+var btnContainer = document.createElement('div');
+btnContainer.style.display = 'flex';
+btnContainer.style.justifyContent = 'space-between';
+btnContainer.style.gap = '4vw';
+
+// 6. Bottone ANNULLA
 var cancelBtn = document.createElement('input');
 cancelBtn.type = 'button';
 cancelBtn.value = 'ANNULLA';
-cancelBtn.style.position = 'absolute';
-cancelBtn.style.bottom = '3vw';
-cancelBtn.style.left = '9.5vw';
-cancelBtn.style.width = '30vw';
+cancelBtn.style.flex = '1';
 cancelBtn.style.height = '12vw';
-cancelBtn.style.fontSize = '4.5vw';
+cancelBtn.style.fontSize = '4vw';
 cancelBtn.style.fontWeight = 'bold';
-cancelBtn.style.backgroundColor = '#90caf9';
-cancelBtn.style.border = '0.2vw solid black';
-cancelBtn.style.borderRadius = '5vw';
-cancelBtn.style.zIndex = 10000;
+cancelBtn.style.backgroundColor = '#f0f0f0';
+cancelBtn.style.color = '#555';
+cancelBtn.style.border = 'none';
+cancelBtn.style.borderRadius = '3vw';
 cancelBtn.onclick = () => {
-  overlay.remove();
-  sfondoopaco.style.display = 'none';
+    overlay.remove();
+    if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
-confirmDiv.appendChild(cancelBtn);
 
-// Bottone CONFERMA
+// 7. Bottone CONFERMA (con la tua logica)
 var confirmBtn = document.createElement('input');
 confirmBtn.type = 'button';
 confirmBtn.value = 'CONFERMA';
-confirmBtn.style.position = 'absolute';
-confirmBtn.style.bottom = '3vw';
-confirmBtn.style.right = '9.5vw';
-confirmBtn.style.width = '30vw';
+confirmBtn.style.flex = '1';
 confirmBtn.style.height = '12vw';
-confirmBtn.style.fontSize = '4.5vw';
+confirmBtn.style.fontSize = '4vw';
 confirmBtn.style.fontWeight = 'bold';
-confirmBtn.style.backgroundColor = 'rgb(0,220,0)';
-confirmBtn.style.border = '0.2vw solid black';
-confirmBtn.style.borderRadius = '5vw';
-confirmBtn.style.zIndex = 10000;
+confirmBtn.style.backgroundColor = '#ff4d4d';
+confirmBtn.style.color = 'white';
+confirmBtn.style.border = 'none';
+confirmBtn.style.borderRadius = '3vw';
+confirmBtn.style.boxShadow = '0 1vw 3vw rgba(255, 77, 77, 0.3)';
 confirmBtn.onclick = () => {
-  var table = titleBtn.nextElementSibling;
-  if (table && table.tagName == 'TABLE') table.remove();
-  titleBtn.remove();
-  salvaNote();
-  overlay.remove();
-  sfondoopaco.style.display = 'none';
+    // TUA LOGICA ORIGINALE
+    var table = titleBtn.nextElementSibling;
+    if (table && table.tagName == 'TABLE') table.remove();
+    titleBtn.remove();
+    if(typeof salvaNote === 'function') salvaNote();
+    
+    overlay.remove();
+    if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
-confirmDiv.appendChild(confirmBtn);
 
-// Aggiungi il div al body
+// Assemblaggio
+btnContainer.appendChild(cancelBtn);
+btnContainer.appendChild(confirmBtn);
+confirmDiv.appendChild(closeBtn);
+confirmDiv.appendChild(p);
+confirmDiv.appendChild(btnContainer);
 overlay.appendChild(confirmDiv);
+
+// Aggiunta al body
 document.body.appendChild(overlay);
-sfondoopaco.style.display = 'block';
+
+// Mostra lo sfondo opaco se esiste
+if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'block';
 
   }, 700);
  }
@@ -3205,7 +3270,7 @@ function createRow(titolo = 'Capitolo') {
   var wrapper = document.createElement('div');
   wrapper.style.position = 'relative';
   wrapper.style.width = '65vw';
-  
+ 
   var titleContainer = document.createElement('div');
     titleContainer.style.display = 'flex';
     titleContainer.style.alignItems = 'center';
@@ -3239,10 +3304,10 @@ function createRow(titolo = 'Capitolo') {
     titleDiv.style.whiteSpace = 'nowrap';        // mai a capo
 titleDiv.style.overflow = 'hidden';          // nasconde l’eccesso
 titleDiv.style.textOverflow = 'ellipsis';    // ...
-titleDiv.style.maxWidth = '60%'; 
-    
-  
-  
+titleDiv.style.maxWidth = '60%';
+   
+ 
+ 
 
     titleDiv.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -3335,6 +3400,7 @@ textarea.placeholder = 'Scrivi...';
 textarea.style.width = '100%';
 textarea.style.minHeight = '40vw';
 textarea.style.fontSize = '4vw';
+textarea.style.fontFamily = 'inherit';
 textarea.style.borderRadius = '2vw';
 textarea.style.resize = 'none';
 textarea.style.overflowY = 'hidden'; // evita la scrollbar
@@ -3366,16 +3432,27 @@ textarea.addEventListener('focus', autoResize);
 
   var cellMinus = document.createElement('td');
     var minusBtn = document.createElement('button');
-    minusBtn.textContent = '-';
-    minusBtn.style.width = '5vw';
-    minusBtn.style.height = '5vw';
-    minusBtn.style.fontSize = '3vw';
-    minusBtn.style.backgroundColor = '#ef9a9a';
-    minusBtn.style.border = '0.1vw solid black';
-    minusBtn.style.borderRadius = '50%';
-          minusBtn.style.userSelect = 'none';
-          minusBtn.style.webkitUserSelect = 'none';
-          minusBtn.style.msUserSelect = 'none';
+
+
+   minusBtn.textContent = '✕';
+ minusBtn.style.width = '6vw';
+ minusBtn.style.height = '6vw';
+ minusBtn.style.marginTop = '6vw';
+ minusBtn.style.marginLeft = '0vw';
+ minusBtn.style.border = 'none';
+ minusBtn.style.borderRadius = '50%';
+ minusBtn.style.backgroundColor = '#ff4d4d';
+ minusBtn.style.color = 'white';
+ minusBtn.style.fontSize = '3.5vw';
+ minusBtn.style.cursor = 'pointer';
+ minusBtn.style.display = 'flex';
+ minusBtn.style.alignItems = 'center';
+ minusBtn.style.justifyContent = 'center';
+ minusBtn.style.flexShrink = '0';
+ minusBtn.style.userSelect = 'none';
+ minusBtn.style.webkitUserSelect = 'none';
+ minusBtn.style.msUserSelect = 'none';
+
     var holdTimeout;
     minusBtn.addEventListener('mousedown', () => {
      holdTimeout = setTimeout(() => {
@@ -3391,7 +3468,7 @@ textarea.addEventListener('focus', autoResize);
     clearTimeout(holdTimeout);
     });
     minusBtn.addEventListener('mouseleave', () => {
-     clearTimeout(holdTimeout); 
+     clearTimeout(holdTimeout);
     });
     minusBtn.addEventListener('touchstart', (e) => {
      e.preventDefault();
@@ -3422,12 +3499,23 @@ textarea.addEventListener('focus', autoResize);
     var cellPlus = document.createElement('td');
     var plusBtn = document.createElement('button');
     plusBtn.textContent = '+';
-    plusBtn.style.width = '5vw';
-    plusBtn.style.height = '5vw';
-    plusBtn.style.fontSize = '3vw';
-    plusBtn.style.backgroundColor = '#a5d6a7';
-    plusBtn.style.border = '0.1vw solid black';
-    plusBtn.style.borderRadius = '50%';
+ plusBtn.style.width = '6vw';
+ plusBtn.style.height = '6vw';
+ plusBtn.style.marginTop = '6vw';
+ plusBtn.style.marginLeft = '0.5vw';
+ plusBtn.style.border = 'none';
+ plusBtn.style.borderRadius = '50%';
+ plusBtn.style.backgroundColor = '#44cc44';
+ plusBtn.style.color = 'white';
+ plusBtn.style.fontSize = '4vw';
+ plusBtn.style.cursor = 'pointer';
+ plusBtn.style.display = 'flex';
+ plusBtn.style.alignItems = 'center';
+ plusBtn.style.justifyContent = 'center';
+ plusBtn.style.flexShrink = '0';
+ plusBtn.style.userSelect = 'none';
+ plusBtn.style.webkitUserSelect = 'none';
+ plusBtn.style.msUserSelect = 'none';
     plusBtn.addEventListener('click', () => {
       var newRow = createRow();
       table.appendChild(newRow);
@@ -3435,7 +3523,7 @@ textarea.addEventListener('focus', autoResize);
       salvaNote();
     });
     cellPlus.appendChild(plusBtn);
-    
+   
 
   var charMapBtn = document.createElement('button');
   charMapBtn.textContent = 'Àα';
@@ -3449,6 +3537,7 @@ textarea.addEventListener('focus', autoResize);
   charMapBtn.style.border = 'none';
   charMapBtn.style.backgroundColor = '#a5d6a7';
   charMapBtn.style.color = '#a882a8';
+  charMapBtn.style.padding = '0vw';
   charMapBtn.style.userSelect = 'none';
   charMapBtn.style.border = '0.05vw solid black';
   wrapper.appendChild(charMapBtn);
@@ -4179,10 +4268,14 @@ dati.reverse().forEach(valore => {
   var dataCompito = new Date(valore.data);
   dataCompito.setHours(0,0,0,0);
 
+
+/*
   if (dataCompito < oggi) {
     riga.style.opacity = "0.5";
     riga.style.textDecoration = "line-through";
   }
+*/
+
 });
  var promemoriaJSON = localStorage.getItem('promemoriaSalvati');
  var promemoria = promemoriaJSON ? JSON.parse(promemoriaJSON) : [];
@@ -5096,7 +5189,15 @@ function cancMemory()
  id_Card=0;
  matchedCount=0;
 }
-
+// Aggiunge l'ascolto del click su tutto il documento
+document.addEventListener('click', () => {
+    if(interactionSoundEffects==true && document.getElementById('overlayAccount').style.display == 'none')
+    {
+     playClick();
+     if(mobileVibration==true)
+     navigator.vibrate(10);
+    }
+});
 </script>
 </head>
 <body text="ffffff">
@@ -9513,7 +9614,7 @@ function explainModesMenu(par)
 
 
 <div id="confermapuliscipagina" style="display: none; position: fixed; width: 85vw; padding: 6vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10000; font-family: sans-serif; text-align: center; box-sizing: border-box">
-<input type="button" name="closeconfermapuliscipagina" id="closeconfermapuliscipagina" style="position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent" value="✕" onClick="confermapuliscipagina'.style.display='none'; sfondoopaco2.style.display='none';">
+<input type="button" name="closeconfermapuliscipagina" id="closeconfermapuliscipagina" style="position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent" value="✕" onClick="confermapuliscipagina.style.display='none'; sfondoopaco2.style.display='none';">
 <p style="font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;">
 Vuoi cancellare i<br>contenuti di questa pagina?
 </p>
@@ -10154,7 +10255,7 @@ RAPIDI
 <input type="button" name="closeappunti" id="closeappunti" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showFastNotes();">
 </p>
   <div>
-    <textarea id="testoappuntirapidi" style="width: 80vw; height: 65vw; font-size: 4vw; margin: 6vw 0 3vw 0; resize: none; overflow-y: auto; font-family: Georgia, 'Times New Roman', serif; padding: 2vw; border: 0.2vw solid black; border-radius: 2vw; box-shadow: 0 1vw 2vw rgba(0,0,0,0.25)" placeholder="Scrivi..."></textarea>
+    <textarea id="testoappuntirapidi" style="width: 80vw; height: 65vw; font-size: 4vw; margin: 6vw 0 3vw 0; resize: none; overflow-y: auto; font-family: sans-serif; padding: 2vw; border: 0.2vw solid black; border-radius: 2vw; box-shadow: 0 1vw 2vw rgba(0,0,0,0.25)" placeholder="Scrivi..."></textarea>
 <div style="display: flex; justify-content: space-between; width: 80vw; margin: 0 auto 3vw auto;">
         <input type="button" id="cancellarapido" name="cancellarapido" style="width: 35vw; height: 15vw; font-size: 5vw; font-weight: bold; background-color: #f55; border: 0.1vw solid #000; border-radius: 4vw; cursor: pointer" value="CANCELLA" onClick="confermacancellarapidi.style.display = 'block'; sfondoopaco.style.display='block';">
         
@@ -10163,12 +10264,33 @@ RAPIDI
   </div>
 </div>
 
-<div id="confermacancellarapidi" style="display: none; position: fixed; width: 90vw; height: 35vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #d7d7d7; color: black; border-radius: 3vw; z-index: 10000">
-  <input type="button" name="closecancellarapidi" id="closecancellarapidi" style="position: absolute; background-color: #d7d7d7; width: 6vw; height: 4vw; font-size: 2.5vw; margin-left: 35vw; margin-top: 1vw; border: none" value="❌" onClick="document.getElementById('confermacancellarapidi').style.display='none'; sfondoopaco.style.display='none';">
-  <p style="height: 8vw; font-size: 6vw; font-weight: bold; margin-top: 6vw">Vuoi eliminare questi appunti?</p>
-<input type="button" name="annullaeliminarapidi" id="annullaeliminarapidi" style="width: 30vw; height: 12vw; font-size: 4.5vw; font-weight: bold; background-color: #90caf9; border: 0.2vw solid black; border-radius: 5vw; margin-right: 10vw; z-index: 10000" value="ANNULLA" onClick="document.getElementById('confermacancellarapidi').style.display='none'; sfondoopaco.style.display='none';">
-<input type="button" name="confermaBtn" id="confermaBtn" style="position: relative; width: 30vw; height: 12vw; font-size: 4.5vw; font-weight: bold; background-color: rgb(0,220,0); border: 0.2vw solid black; border-radius: 5vw; margin-left: 0vw; z-index: 10000" value="CONFERMA" onClick="document.getElementById('confermacancellarapidi').style.display='none'; sfondoopaco.style.display='none'; testoappuntirapidi.value = '';">
+
+<div id="confermaeliminacontenuto" style="display: none; position: fixed; width: 85vw; padding: 6vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10000; font-family: sans-serif; text-align: center; box-sizing: border-box">
+<input type="button" name="closeconfermaeliminacontenuto" id="closeconfermaeliminacontenuto" style="position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent" value="✕" onClick="confermaeliminacontenuto.style.display='none'; sfondoopaco2.style.display='none';">
+<p style="font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;">
+Cancellare definitivamente<br>questo conenuto?
+</p>
+<div style="display: flex; justify-content: space-between; gap: 4vw">
+<input type="button"name="annullapuliscipagina" id="annullapuliscipagina" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #f0f0f0; color: #555; border: none; border-radius: 3vw; cursor: pointer" value="ANNULLA" onClick="confermaeliminacontenuto.style.display='none'; sfondoopaco2.style.display='none';">
+<input type="button" name="confermaBtneliminacontenuto" id="confermaBtneliminacontenuto" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #ff4d4d; color: white; border: none; border-radius: 3vw; cursor: pointer; box-shadow: 0 1vw 3vw rgba(255, 77, 77, 0.3)" value="CONFERMA" onClick="cancByConfirm(); confermaeliminacontenuto.style.display='none'; sfondoopaco2.style.display='none';">
 </div>
+</div>
+
+
+
+<div id="confermacancellarapidi" style="display: none; position: fixed; width: 85vw; padding: 6vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10000; font-family: sans-serif; text-align: center; box-sizing: border-box">
+<input type="button" name="closecancellarapidi" id="closecancellarapidi" style="position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent" value="✕" onClick="document.getElementById('confermacancellarapidi').style.display='none'; sfondoopaco.style.display='none';">
+<p style="font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;">
+Effettuare la pulizia<br>dell'area di testo?
+</p>
+<div style="display: flex; justify-content: space-between; gap: 4vw">
+<input type="button"name="annullapuliscipagina" id="annullapuliscipagina" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #f0f0f0; color: #555; border: none; border-radius: 3vw; cursor: pointer" value="ANNULLA" onClick="document.getElementById('confermacancellarapidi').style.display='none'; sfondoopaco.style.display='none';">
+<input type="button" name="confermaBtneliminacontenuto" id="confermaBtneliminacontenuto" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #ff4d4d; color: white; border: none; border-radius: 3vw; cursor: pointer; box-shadow: 0 1vw 3vw rgba(255, 77, 77, 0.3)" value="CONFERMA" onClick="document.getElementById('confermacancellarapidi').style.display='none'; sfondoopaco.style.display='none'; testoappuntirapidi.value = '';">
+</div>
+</div>
+
+
+
 
 
 
@@ -10267,7 +10389,7 @@ pulsante per cancellare
 <div id="trisdiv" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); width: 80vw; min-height: 120vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 4000">
   <p style="margin-bottom: 8vw; color: #333; position: relative">
 
-<input type="button" name="closetris" id="closetris" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showTris();">
+<input type="button" name="closetris" id="closetris" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showTris(); stopSoundtrack();">
 <div style="position: absolute; font-size: 8vw; font-weight: bold; color: black; left: 10vw; top: 10vw">
 TRIS
 </div>
@@ -10392,7 +10514,7 @@ cancTris();
 
 <div id="impiccatodiv" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); width: 80vw; min-height: 120vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 4000">
   <p style="font-size: 8vw; font-weight: bold; margin-bottom: 8vw; color: #333; position: relative">
-    <input type="button" id="closeimpiccato" name="closeimpiccato" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showHanged();">
+    <input type="button" id="closeimpiccato" name="closeimpiccato" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showHanged(); stopSoundtrack();">
 IMPICCATO
   </p>
 <table style="margin-right: 34vw">
@@ -10615,7 +10737,7 @@ cancHanged();
 
 <div id="masterminddiv" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); width: 80vw; min-height: 120vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 4000">
   <p style="font-size: 8vw; font-weight: bold; margin-bottom: 8vw; color: #333; position: relative">
-    <input type="button" id="closeimastermind" name="closeimastermind" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showMastermind();">
+    <input type="button" id="closeimastermind" name="closeimastermind" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showMastermind(); stopSoundtrack();">
 MASTERMIND
   </p>
 <input type="button" name="startmastermind" id="startmastermind" style="width: 30vw; height: 20vw; font-size: 6vw; font-weight: bold; background-color: rgb(0,220,0); border-radius: 2vw; border: solid black 0.1vw" value="AVVIA" onClick="startMastermind();">
@@ -10653,7 +10775,7 @@ MASTERMIND
 
 <div id="memorydiv" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); width: 80vw; height: 120vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 4000">
   <p style="font-size: 8vw; font-weight: bold; margin-bottom: 8vw; color: #333; position: relative">
-    <input type="button" id="closememory" name="closememory" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showMemory(); cancMemory(); nomememory.value = '';">
+    <input type="button" id="closememory" name="closememory" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showMemory(); cancMemory(); nomememory.value = ''; stopSoundtrack();">
 MEMORY
   </p>
 <input type="button" name="startmemory" id="startmemory" style="width: 30vw; height: 20vw; font-size: 6vw; font-weight: bold; background-color: rgb(0,220,0); border-radius: 2vw; border: solid black 0.1vw" value="AVVIA" onClick="startMemory();">
@@ -10759,10 +10881,10 @@ ATTIVITÀ
 </td>
 <td>
 <button style="width: 40vw; height: 55vw; background: linear-gradient(to bottom, #e85a5a, #ffb3b3); margin-left: 3vw; margin-top: 7vw; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-top: 5vw; padding-bottom: 5vw; border: 0.3vw solid #000; border-radius: 2vw; box-shadow: 0 1vw 2vw rgba(0,0,0,0.18); font-family: sans-serif">
-<span style="font-size: 5vw; font-weight: bold; color: white; text-shadow: 0.3vw 0.3vw 1vw rgba(0,0,0,0.3)" onClick="funzioneincompleta.style.display = 'block';">
+<span style="font-size: 5vw; font-weight: bold; color: white; text-shadow: 0.3vw 0.3vw 1vw rgba(0,0,0,0.3)" onClick="showNotes();">
 APPUNTI
 </span>
-<input name="appuntirapidi" id="appuntirapidi" style="width: 25vw; height: 25vw; background-color:transparent; font-size: 18vw; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; margin-top: 7.5vw" value="📝" onClick="event.stopPropagation(); funzioneincompleta.style.display = 'block';">
+<input type="button" name="appuntirapidi" id="appuntirapidi" style="width: 25vw; height: 25vw; background-color:transparent; font-size: 18vw; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; margin-top: 7.5vw" value="📝" onClick="event.stopPropagation(); funzioneincompleta.style.display = 'block';">
 </button>
 
 </td>
@@ -10784,15 +10906,15 @@ GIOCHI
 <table style="margin-left: 3vw">
 <tr>
 <th>
-<input type="button" name="tris" id="tris" style="width: 25vw; height: 20vw; background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" value="TRIS" onClick="event.stopPropagation(); showTris();">
+<input type="button" name="tris" id="tris" style="width: 25vw; height: 20vw; background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" value="TRIS" onClick="event.stopPropagation(); showTris(); playMusic();">
 </th>
 <th>
-<input type="button" name="impiccato" id="impiccato" style="width: 25vw; height: 20vw; background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" value="IMPICCATO" onClick="event.stopPropagation(); showHanged();">
+<input type="button" name="impiccato" id="impiccato" style="width: 25vw; height: 20vw; background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" value="IMPICCATO" onClick="event.stopPropagation(); showHanged(); playMusic();">
 </th>
 </tr>
 <tr>
 <td>
-<button id="mastermind" style="width: 25vw; height: 20vw; background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" onClick="event.stopPropagation(); showMastermind();">
+<button id="mastermind" style="width: 25vw; height: 20vw; background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" onClick="event.stopPropagation(); showMastermind(); playMusic();">
 <div style="position: relative; font-size: 12vw; right: 6vw; top: 2.5vw">M
 </div>
 <div style="position: relative; font-size: 3.5vw; bottom: 9vw; left: 5vw">ASTER
@@ -10802,7 +10924,7 @@ GIOCHI
 </button>
 </td>
 <td>
-<input type="button" name="memory" id="memory" style="width: 25vw; height: 20vw;  background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" value="MEMORY" onClick="event.stopPropagation(); showMemory();">
+<input type="button" name="memory" id="memory" style="width: 25vw; height: 20vw;  background-color: rgba(220,220,220,0.3); font-size: 4vw; font-weight: bold; border-radius: 5vw; margin-right: 2vw; margin-top: 4vw; margin-bottom: 1vw; color: #000; border: 0.1vw solid rgba(0,0,0,0.2); text-shadow: 0 0 0.2vw rgba(255,255,255,0.5), 0 0 0.4vw rgba(0,0,0,0.2); cursor: pointer" value="MEMORY" onClick="event.stopPropagation(); showMemory(); playMusic();">
 </td>
 </tr>
 </table>
@@ -10817,6 +10939,246 @@ GIOCHI
 <button id="simboloEmail" style="width: 15vw; height: 15vw; color: white; background-color: rgba(255,255,255,0.25); backdrop-filter: blur(6px); font-size: 8vw; font-weight: bold; border-radius: 50%; border: 0.15vw solid rgba(0,0,0,0.2); box-shadow: 0 0.3vw 1vw rgba(0,0,0,0.25); position: relative; top: 5vw; margin-right: 4vw; margin-left: 6vw; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; overflow: hidden" onclick="apriPannello();">
     <span id="inizialeAvatar">?</span>
 </button>
+<br>
+<button id="btnImpostazioni" style="width: 15vw; height: 15vw; color: white; background-color: rgba(255,255,255,0.25); backdrop-filter: blur(6px); font-size: 8vw; font-weight: bold; border-radius: 50%; border: 0.15vw solid rgba(0,0,0,0.2); box-shadow: 0 0.3vw 1vw rgba(0,0,0,0.25); position: relative; top: 5vw; margin-right: 4vw; margin-left: 6vw; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; overflow: hidden" onclick="showSettings();">
+    <span style="filter: drop-shadow(0 0.5vw 0.5vw rgba(0,0,0,0.5))">⚙️</span>
+</button>
+<div id="overlayImpostazioni" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9990" onclick="showSettings();">
+</div>
+
+
+<div id="pannelloImpostazioni" style="display: none; position: absolute; top: 50%; left: 50%; transform: translateX(-50%); width: 80vw; height: 130vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 9999">
+<p style="font-size: 8vw; font-weight: bold; margin-bottom: 8vw; color: #333; position: relative">
+IMPOSTAZIONI
+<input type="button" name="closebasinumeriche" id="closebasinumeriche" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showSettings();">
+</p>
+<div style="position: relative; text-align: center">
+
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 4vw 0; border-bottom: 1px solid #ddd;">
+            <span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva effetti sonori d'interazione</span>
+            <input type="checkbox" id="checkClick" style="width: 6vw; height: 6vw">
+        </div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 4vw 0; border-bottom: 1px solid #ddd;">
+            <span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva musica nei giochi</span>
+            <input type="checkbox" id="checkSottofondo" style="width: 6vw; height: 6vw">
+        </div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 4vw 0; border-bottom: 1px solid #ddd;">
+            <span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva vibrazione (su mobile)</span>
+            <input type="checkbox" id="checkVibrazione" style="width: 6vw; height: 6vw">
+        </div>
+
+
+</div>
+
+
+
+<br><br>
+    
+<button id="btnSalvaImpostazioniLocale" style="width: 70vw; padding: 4vw; background: #607D8B; color: white; border: none; border-radius: 4vw; font-weight: bold; font-size: 4.5vw; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 3vw" onclick="applySettings(); showSettings();">
+APPLICA
+</button>
+</div>
+</div>
+    
+
+
+
+
+
+
+
+<script>
+function showSettings()
+{
+ if(pannelloImpostazioni.style.display == 'none')
+ {
+  pannelloImpostazioni.style.display = 'block';
+  overlayImpostazioni.style.display = 'block';
+ }
+ else
+ {
+  pannelloImpostazioni.style.display = 'none';
+  overlayImpostazioni.style.display = 'none';
+ }
+}
+
+const playClick = () => {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  // 'sine' è perfetta per i suoni acuti perché non ha distorsioni
+  oscillator.type = 'sine'; 
+  
+  // Frequenza alta (1200Hz-1500Hz) per un tocco digitale e pulito
+  oscillator.frequency.setValueAtTime(1400, audioCtx.currentTime);
+  // Scivolamento rapidissimo verso l'alto per un effetto "sparkle"
+  oscillator.frequency.exponentialRampToValueAtTime(1600, audioCtx.currentTime + 0.03);
+
+  // Volume estremamente basso: il segreto dei suoni acuti eleganti
+  gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + 0.03);
+};
+
+// --- QUESTE DEVONO ESSERE FUORI DA TUTTO (Globali) ---
+var audioCtx = null;
+var timerMusica = null; 
+
+const playSoundtrack = () => {
+    // 1. Se la musica è già partita, esci per evitare sovrapposizioni
+    if (timerMusica !== null) return; 
+
+    // 2. Crea il contesto audio (fondamentale crearlo qui per poterlo chiudere)
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0.15, audioCtx.currentTime); 
+    masterGain.connect(audioCtx.destination);
+
+    // --- CONFIGURAZIONE ---
+    const bpm = 110;
+    const noteLength = 60 / bpm / 2; // Ottavi
+    const scale = [130.81, 146.83, 164.81, 196.00, 220.00]; 
+
+    // --- STRUMENTO 1: IL BASSO ---
+    const playBass = (time, freq) => {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq / 2, time);
+        g.gain.setValueAtTime(0, time);
+        g.gain.linearRampToValueAtTime(0.2, time + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, time + noteLength * 2);
+        osc.connect(g).connect(masterGain);
+        osc.start(time);
+        osc.stop(time + noteLength * 2);
+    };
+
+    // --- STRUMENTO 2: ARPEGGIATORE ---
+    const playSynth = (time, freq) => {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq * 2, time);
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(2000, time);
+        filter.frequency.exponentialRampToValueAtTime(500, time + noteLength);
+        g.gain.setValueAtTime(0, time);
+        g.gain.linearRampToValueAtTime(0.1, time + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, time + noteLength);
+        osc.connect(filter).connect(g).connect(masterGain);
+        osc.start(time);
+        osc.stop(time + noteLength);
+    };
+
+    // --- LOOPER (Motore Ritmico) ---
+    let step = 0;
+    const sequence = () => {
+        // Se audioCtx è stato annullato, fermiamo il loop del timer
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        const lookAhead = 0.1;
+
+        if (step % 4 === 0) playBass(now + lookAhead, scale[0]);
+
+        const randomNote = scale[Math.floor(Math.random() * scale.length)];
+        if (step % 2 === 0 || Math.random() > 0.5) {
+            playSynth(now + lookAhead, randomNote);
+        }
+
+        step++;
+        // Salviamo il timer nella variabile globale per poterlo cancellare dopo
+        timerMusica = setTimeout(sequence, noteLength * 1000);
+    };
+
+    sequence();
+};
+
+const stopSoundtrack = () => {
+    // 1. Cancella il timer per evitare che sequence() si chiami ancora
+    if (timerMusica) {
+        clearTimeout(timerMusica);
+        timerMusica = null; 
+    }
+
+    // 2. Chiudi il contesto audio per zittire immediatamente tutto
+    if (audioCtx) {
+        audioCtx.close().then(() => {
+            audioCtx = null;
+        });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+/*
+//I prossimi sono da provare
+function applicaTema(tema) {
+    const html = document.documentElement;
+    if (tema === 'dark') {
+        html.style.filter = 'invert(1) hue-rotate(180deg)';
+        // Impediamo che le immagini vengano invertite (altrimenti sembrano negativi fotografici)
+        const media = document.querySelectorAll('img, picture, video, .avatar');
+        media.forEach(el => el.style.filter = 'invert(1) hue-rotate(180deg)');
+    } else {
+        html.style.filter = 'none';
+        const media = document.querySelectorAll('img, picture, video, .avatar');
+        media.forEach(el => el.style.filter = 'none');
+    }
+}
+
+
+function applicaDensita(compatta) {
+    const body = document.body;
+    if (compatta) {
+        body.style.transform = "scale(0.85)";
+        body.style.transformOrigin = "top center"; // Mantiene il centro
+        body.style.width = "117.6%"; // Compensa il rimpicciolimento (1 / 0.85 * 100)
+        body.style.marginLeft = "-8.8%"; // Centra perfettamente l'eccesso di larghezza
+    } else {
+        body.style.transform = "none";
+        body.style.width = "100%";
+        body.style.marginLeft = "0";
+    }
+}
+var savedCompact = localStorage.getItem('compactMode') === 'true';
+document.getElementById('checkCompact').checked = savedCompact;
+applicaDensita(savedCompact);
+
+
+
+4. Gestione al caricamento (window.onload)
+Per evitare che l'app "salti" da chiaro a scuro all'avvio, aggiungi questo dentro il tuo window.onload:
+
+JavaScript
+// Recupera e applica Dark Mode
+var savedDark = localStorage.getItem('darkMode') === 'true';
+document.getElementById('checkDark').checked = savedDark;
+applicaTema(savedDark ? 'dark' : 'light');
+
+// Recupera e applica Densità
+
+*/
+</script>
+
+
 
 
 <div id="overlayAccount" onclick="chiudiPannello()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 10000;"></div>
