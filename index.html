@@ -5191,12 +5191,12 @@ function cancMemory()
 }
 // Aggiunge l'ascolto del click su tutto il documento
 document.addEventListener('click', () => {
-    if(interactionSoundEffects==true && document.getElementById('overlayAccount').style.display == 'none')
-    {
-     playClick();
-     if(mobileVibration==true)
-     navigator.vibrate(10);
-    }
+ if(document.getElementById('overlayAccount').style.display == 'block')
+ return;
+ if(interactionSoundEffects==true)
+ playClick();
+ if(mobileVibration==true)
+ navigator.vibrate(100);
 });
 </script>
 </head>
