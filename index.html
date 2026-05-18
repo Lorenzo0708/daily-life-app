@@ -202,23 +202,7 @@ function inviaNotificaAttivitaUtente(tipoEvento, emailDestinatario) {
 }
 
 
-function gestisciZoomApplicazione() {
-    // Individua il tag meta viewport esistente
-    var viewport = document.querySelector('meta[name="viewport"]');
-    
-    if (viewport) {
-        // Disabilita lo zoom in modo pulito e standard per i dispositivi mobile,
-        // lasciando intatta la gestione nativa dei movimenti del dito (scroll).
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-    }
 
-    // SICUREZZA PER LO SCROLL: 
-    // Se nel codice c'erano blocchi ai gesti touch sul body, li resettiamo su 'auto'
-    // in modo che lo scorrimento (verticale e orizzontale) sia sempre attivo.
-    if (document.body) {
-        document.body.style.touchAction = 'auto';
-    }
-}
 
 
 function bloccaAccessoMultiplo() {
@@ -12004,7 +11988,6 @@ function showPeriodicTable()
  tavolaperiodicadiv.style.display = 'block';
  else
  tavolaperiodicadiv.style.display = 'none';
- gestisciZoomApplicazione();
 }
 var content;
 var atomicMasses = {
