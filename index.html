@@ -203,18 +203,20 @@ function inviaNotificaAttivitaUtente(tipoEvento, emailDestinatario) {
 
 
 function gestisciZoomApplicazione() {
-    // Individua il tag meta viewport già esistente nel codice
+    // Individua il tag meta viewport esistente
     var viewport = document.querySelector('meta[name="viewport"]');
-    var tavolaPeriodica = document.getElementById('tavolaperiodicadiv'); // Assicurati che l'ID corrisponda al contenitore della tua tavola
+    
+    if (viewport) {
+        // Disabilita lo zoom in modo pulito e standard per i dispositivi mobile,
+        // lasciando intatta la gestione nativa dei movimenti del dito (scroll).
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
 
-    if (viewport && tavolaPeriodica) {
-        if (tavolaPeriodica.style.display == 'block') {
-            // Se la tavola periodica è visibile, permetti lo zoom
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=yes');
-        } else {
-            // Altrimenti, vieta lo zoom bloccando la scala massima e iniziale a 1.0
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-        }
+    // SICUREZZA PER LO SCROLL: 
+    // Se nel codice c'erano blocchi ai gesti touch sul body, li resettiamo su 'auto'
+    // in modo che lo scorrimento (verticale e orizzontale) sia sempre attivo.
+    if (document.body) {
+        document.body.style.touchAction = 'auto';
     }
 }
 
@@ -14649,7 +14651,7 @@ async function eseguiRegistrazione() {
     finally {
         mostraLoader(false);
     }
-}
+}F
 async function logoutSicuro() {
     // 1. Mostriamo subito il loader per "congelare" la vista
     const loader = document.getElementById('loaderGlobale');
