@@ -46,27 +46,6 @@ body::before {
     pointer-events: none;
 }
 </style>
-
-<style>
-/* ... i tuoi stili attuali ... */
-
-/* Correzioni specifiche per Safari e iOS */
-.ios-device input, 
-.ios-device textarea, 
-.ios-device button {
-    -webkit-appearance: none; /* Rimuove lo stile di sistema di Apple */
-    appearance: none;
-    border-radius: inherit; /* Mantiene il tuo border-radius inline */
-}
-
-/* Impedisce lo zoom automatico sugli input su iPhone */
-@media screen and (max-width: 768px) {
-    .ios-device input, .ios-device textarea {
-        font-size: 16px !important; 
-    }
-}
-</style>
-
 <script type="text/javascript">
 
 if ('serviceWorker' in navigator) {
@@ -96,31 +75,6 @@ var currentSessionId = "ID_" + Math.random().toString(16).slice(2);
 var interactionSoundEffects = localStorage.getItem('interactionSoundEffects') != 'false';
 var gamesMusic = localStorage.getItem('gamesMusic') != 'false';
 var mobileVibration = localStorage.getItem('mobileVibration') != 'false';
-
-
-
-
-
-// Rileva se il dispositivo è iOS o Mac
-const ua = navigator.userAgent;
-const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const isMac = /Macintosh/.test(ua) && !isIOS;
-
-function applicaCorrezioniApple() {
-    if (isIOS || isMac) {
-        // Aggiunge la classe al body per attivare i CSS del Passo 1
-        document.body.classList.add('ios-device');
-        
-        // Correzione larghezza input data per evitare che vengano tagliati dal selettore iOS
-        // Poiché i tuoi input sono circa 30vw[cite: 136, 138], su iOS aumentiamoli leggermente
-        document.querySelectorAll('input[type="date"], input[type="time"]').forEach(el => {
-            el.style.minWidth = '35vw'; 
-        });
-    }
-}
-
-// Esegui la funzione appena la pagina è pronta
-document.addEventListener('DOMContentLoaded', applicaCorrezioniApple);
 
 
 
@@ -175,34 +129,7 @@ window.onload = function() {
  checkSottofondo.checked = gamesMusic;
  checkVibrazione.checked = mobileVibration;
 
-
-
-document.addEventListener('selectstart', function(e) {
-    // Lista di tag dove la selezione è permessa
-    const allowedTags = ['INPUT', 'TEXTAREA'];
-    
-    // Se l'elemento cliccato non è tra quelli permessi, blocca la selezione
-    if (!allowedTags.includes(e.target.tagName) && !e.target.isContentEditable) {
-        e.preventDefault();
-    }
-});
-
-
 };
-
-
-function inviaNotificaAttivitaUtente(tipoEvento, emailDestinatario) {
-    var templateParams = {
-        tipo_evento: tipoEvento,
-        email_utente: emailDestinatario,
-        data_ora: new Date().toLocaleString('it-IT')
-    };
-
-    return emailjs.send('service_bwvozbg', 'template_3stvlv8', templateParams);
-}
-
-
-
 
 
 function bloccaAccessoMultiplo() {
@@ -2783,7 +2710,7 @@ function addDaily(titolo = 'Titolo', attivita = [], id = null)
   pressTimer = setTimeout(() => {
    isLongPress = true;
    sfondoopaco.style.display = 'block';
-   document.body.style.overflow = '';
+   document.body.style.overflow = 'hidden';
    // Mostra il div di conferma eliminazione
 var confirmDiv = document.createElement('div');
 confirmDiv.id = 'confermaelimina_dynamic';
@@ -3184,7 +3111,6 @@ closeBtn.style.color = '#ff4d4d';
 closeBtn.style.cursor = 'pointer';
 closeBtn.onclick = () => {
     overlay.remove();
-    document.body.style.overflow = '';
     if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
 
@@ -3217,7 +3143,6 @@ cancelBtn.style.border = 'none';
 cancelBtn.style.borderRadius = '3vw';
 cancelBtn.onclick = () => {
     overlay.remove();
-    document.body.style.overflow = '';
     if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
 
@@ -3242,7 +3167,6 @@ confirmBtn.onclick = () => {
     if(typeof salvaNote === 'function') salvaNote();
     
     overlay.remove();
-    document.body.style.overflow = '';
     if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
 
@@ -4606,13 +4530,7 @@ function startHanged()
 }
 function getButtonsAtHangedClick(player)
 {
- if(player=='0')
- player = rdmStartHanged();
  currentPlayer = player;
-}
-function rdmStartHanged()
-{
- return(Math.floor(Math.random() * 2) + 1);
 }
 function resetTableColor()
 {
@@ -4630,15 +4548,13 @@ function generateButtonsForHanged()
  {
   setTimeout(() => {
    insparola.style.borderColor = 'black';
-   insparola.type = 'password';
    insparola.value = '';
    insparola.style.color = 'black';
    insparola.readOnly = false;
   }, 1500);
   insparola.style.borderColor = 'red';
   insparola.style.color = 'red';
-  insparola.type = 'text';
-  insparola.value = 'Minimo 3 caratteri';
+  insparola.value = 'Parola...';
   insparola.readOnly = true;
   return;
  }
@@ -4653,7 +4569,6 @@ function generateButtonsForHanged()
   }, 1500);
   insparola.style.borderColor = 'red';
   insparola.style.color = 'red';
-  insparola.type = 'text';
   insparola.value = 'Max. 10 caratteri';
   insparola.readOnly = true;
   insparola.type = 'text';
@@ -5013,26 +4928,30 @@ function startMemory()
     timerDiv.textContent = '0:00';
     memory.parentElement.appendChild(timerDiv);
 
-    // Memorizziamo il momento esatto in cui il gioco inizia
-var memoryStartTime = Date.now(); 
+    var milliseconds = 0;
+var seconds = 0;
+var minutes = 0;
 
-timerInterval = setInterval(function () {
-    // Calcoliamo quanto tempo è passato dall'inizio a "ora"
-    var now = Date.now();
-    var diff = now - memoryStartTime; 
+    timerInterval = setInterval(function () {
 
-    // Convertiamo i millisecondi totali in Minuti, Secondi e Millisecondi
-    var minutes = Math.floor(diff / 60000);
-    var seconds = Math.floor((diff % 60000) / 1000);
-    var milliseconds = diff % 1000;
+    milliseconds += 10;  // aggiorna ogni 10 ms
 
-    // Aggiorniamo la grafica
+    if (milliseconds == 1000) {
+        milliseconds = 0;
+        seconds++;
+    }
+
+    if (seconds == 60) {
+        seconds = 0;
+        minutes++;
+    }
+
     timerDiv.textContent =
         minutes + ":" +
         (seconds < 10 ? "0" + seconds : seconds) + ":" +
         (milliseconds < 100 ? "0" : "") + (milliseconds < 10 ? "0" : "") + milliseconds;
 
-}, 10); // L'intervallo di 10ms ora serve solo a rendere fluida la grafica
+}, 10);
  for(i=0;i<symbols.length;i++)
  {
   values.push(symbols[i], symbols[i]); // ogni simbolo due volte
@@ -5282,10 +5201,6 @@ function cancMemory()
 }
 // Aggiunge l'ascolto del click su tutto il documento
 document.addEventListener('click', () => {
- if (audioCtx && audioCtx.state === 'suspended')
-   {
-    audioCtx.resume();
-   }
  if(document.getElementById('overlayAccount').style.display == 'block')
  return;
  if(interactionSoundEffects==true)
@@ -5293,16 +5208,6 @@ document.addEventListener('click', () => {
  if(mobileVibration==true)
  navigator.vibrate(50);
 });
-
-document.addEventListener('touchmove', function (event) {
-    var tavolaPeriodica = document.getElementById('showtabella');
-    
-    // Se la tavola periodica NON è visibile e l'utente prova a usare più di un dito (pinch-to-zoom)
-    if (event.scale !== 1 && (!tavolaPeriodica || tavolaPeriodica.style.display !== 'block')) {
-        event.preventDefault(); // Blocca lo zoom nativo del browser
-    }
-}, { passive: false });
-
 </script>
 </head>
 <body text="ffffff">
@@ -5501,7 +5406,7 @@ function mostraNotifica(testo, colore) {
 <th style="width: 40vw"></th>
 <th>
 <div style="font-size: 3vw; font-weight: 600; color: #dddddd; margin-top: 2vw; margin-right: 2vw; text-align: right">
-Versione: 1.0.1
+Versione: 1.0.0
 </div>
 <div style="display: flex; gap: 2vw; margin-top: 3vw; justify-content: flex-start; margin-bottom: 2vw">
 <button id="calcbtn" style="width: 12vw; height: 12vw; border-radius: 50%; background-color: rgba(255,255,255,0.25); backdrop-filter: blur(6px); color: #000; font-size: 2.5vw; font-weight: bold; border: 0.15vw solid rgba(0,0,0,0.2); box-shadow: 0 0.3vw 1vw rgba(0,0,0,0.25); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; margin-right: 1.5vw" onClick="showCalc();">
@@ -5842,39 +5747,17 @@ SETTIMANA
 </div>
 <input type="button" name="closeconvertitori" id="closeconvertitori" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showCalc();">
 <p style="font-size: 7vw; font-weight: bold; color: black; margin-top: 8vw; margin-bottom: 8vw">CONVERTITORI</p>
-<button id="calc" class="btn-convertitori_altro" onClick="showCalcWeight(); cancCalc();">MASSA
+<button name="massa" id="calc" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showCalcWeight(); cancCalc();">MASSA
 </button>
-<button id="angoli" class="btn-convertitori_altro" onClick="showCalcAngles(); cancCalc();">GRADI
+<button id="angoli" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showCalcAngles(); cancCalc();">GRADI
 </button>
-<button id="temperatura" class="btn-convertitori_altro" onClick="showCalcTemperature(); cancCalc();">TEMPERATURA
+<button id="temperatura" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showCalcTemperature(); cancCalc();">TEMPERATURA
 </button>
-<button id="velocita" class="btn-convertitori_altro" onClick="showCalcSpeed(); cancCalc();">VELOCITÀ
+<button id="velocita" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showCalcSpeed(); cancCalc();">VELOCITÀ
 </button>
-<button id="lunghezza" class="btn-convertitori_altro" onClick="showCalcLength(); cancCalc();">LUNGHEZZA
+<button id="lunghezza" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showCalcLength(); cancCalc();">LUNGHEZZA
 </button>
 </div>
-
-<style>
-.btn-convertitori_altro {
- width: 70vw;
- height: 15vw;
- margin-top: 2vw;
- margin-bottom: 2vw;
- font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
- font-size: 5.5vw;
- font-weight: bold;
- letter-spacing: 0.3vw;
- text-align: center;
- text-transform: uppercase;
- color: #ffffff;
- background-color: #ffa826;
- border: none;
- border-radius: 3.5vw;
- box-shadow: 0 1vw 2.5vw rgba(39, 174, 96, 0.4);
- cursor: pointer;
- transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-</style>
 
 <div id="probabilitadiv" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); width: 80vw; height: 130vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 9999">
 <p style="font-size: 8vw; font-weight: bold; margin-bottom: 8vw; color: #333; position: relative">
@@ -7352,51 +7235,6 @@ function openCityDiv() {
 }
 </script>
 
-<style>
-.btn-city {
- width: 25vw;
- height: 16vw;
- display: flex;
- flex-direction: column;
- justify-content: center;
- align-items: center;
- gap: 0.4vw;
- padding: 1.5vw;
- background: #f0f7ff;
- border: none;
- border-radius: 1.2vw; /* Angoli accennati ma decisi, stile premium */
- box-shadow: 0 4px 12px rgba(0, 50, 100, 0.04);
- cursor: pointer;
- transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
- -webkit-font-smoothing: antialiased;
-}
-.btn-city .city-name {
- font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
- font-size: 3vw;
- font-weight: 600;
- color: #0f172a; /* Grigio ardesia scurissimo, moderno */
- letter-spacing: -0.02vw;
-}
-.btn-city .country-name {
- font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
- font-size: 2vw;
- font-weight: 500;
- color: #64748b;
- text-transform: uppercase;
- letter-spacing: 0.05vw;
-}
-.btn-city:hover {
- background: #e1effe;
- box-shadow: 0 6px 20px rgba(0, 50, 100, 0.08);
- transform: translateY(-2px);
-}
-.btn-city:active {
- transform: scale(0.97);
- background: #d1e6fc;
- box-shadow: 0 2px 8px rgba(0, 50, 100, 0.04);
-}
-</style>
-
 <div id="cittadiv" style="display: none; position: absolute; left: 50%; top: 61.5vw; transform: translateX(-50%); width: 80vw; height: 130vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 9999; overflow-y: auto">
 <p style="font-size: 8vw; font-weight: bold; margin-bottom: 8vw; color: #333; position: relative">
 SCEGLI PAESE
@@ -7408,39 +7246,54 @@ A
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Dubai">
-<span class="city-name"> Abu Dhabi </span>
-<span class="country-name"> Emirati Arabi Uniti </span>
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Asia/Dubai">
+ABU DHABI
+<span style="font-weight: bold; font-size: 2vw">
+<br>
+(EMIRATI ARABI UNITI)
+</span>
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Lagos">
-<span class="city-name"> Abuja </span>
-<span class="country-name"> Nigeria </span>
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Africa/Lagos">
+ABUJA
+<span style="font-weight: bold; font-size: 2vw">
+<br>
+(NIGERIA)
+</span>
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Accra">
-<span class="city-name"> Accra </span>
-<span class="country-name"> Ghana </span>
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Africa/Accra">
+ACCRA
+<span style="font-weight: bold; font-size: 2vw">
+<br>
+(GHANA)
+</span>
 </button>
 </th>
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Addis_Ababa">
-<span class="city-name"> Addis Abeba </span>
-<span class="country-name"> Etiopia </span>
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Addis_Ababa">
+ADDIS ABEBA
+<span style="font-weight: bold; font-size: 2vw">
+<br>
+(ETIOPIA)
+</span>
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Algiers">
-<span class="city-name"> Algeri </span>
-<span class="country-name"> Etiopia </span>
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Africa/Algiers">
+ALGERI
+<span style="font-weight: bold; font-size: 2vw">
+<br>
+(ALGERIA)
+</span>
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Amman">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Asia/Amman">
 AMMAN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7451,7 +7304,7 @@ AMMAN
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Amsterdam">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Amsterdam">
 AMSTERDAM
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7460,7 +7313,7 @@ AMSTERDAM
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Andorra">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Andorra">
 ANDORRA LA VELLA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7469,7 +7322,7 @@ ANDORRA LA VELLA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Istanbul">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Europe/Istanbul">
 ANKARA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7480,7 +7333,7 @@ ANKARA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Indian/Antananarivo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 2.7vw" onClick="chooseCity(this);" data-tz="Indian/Antananarivo">
 ANTANANARIVO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7489,7 +7342,7 @@ ANTANANARIVO
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Apia">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Pacific/Apia">
 APIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7498,7 +7351,7 @@ APIA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Ashgabat">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Ashgabat">
 ASHGABAT
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7509,7 +7362,7 @@ ASHGABAT
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Asmara">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Africa/Asmara">
 ASMARA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7518,7 +7371,7 @@ ASMARA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Asuncion">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Asuncion">
 ASUNCION
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7527,7 +7380,7 @@ ASUNCION
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Athens">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3.5vw" onClick="chooseCity(this);" data-tz="Europe/Athens">
 ATENE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7543,7 +7396,7 @@ ATENE
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Baku">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Baku">
 BAKU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7552,7 +7405,7 @@ BAKU
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Bamako">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Bamako">
 BAMAKO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7561,7 +7414,7 @@ BAMAKO
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Bangkok">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Bangkok">
 BANGKOK
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7572,7 +7425,7 @@ BANGKOK
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Banjul">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Banjul">
 BANJUL
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7581,7 +7434,7 @@ BANJUL
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/St_Kitts">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/St_Kitts">
 BASSETERRE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7590,7 +7443,7 @@ BASSETERRE
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Shanghai">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Shanghai">
 BEIJING
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7601,7 +7454,7 @@ BEIJING
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Belgrade">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Belgrade">
 BELGRADO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7610,7 +7463,7 @@ BELGRADO
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Bern">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Bern">
 BERNA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7619,7 +7472,7 @@ BERNA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Bishkek">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Bishkek">
 BISHKEK
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7630,7 +7483,7 @@ BISHKEK
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Bissau">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Bissau">
 BISSAU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7639,7 +7492,7 @@ BISSAU
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Blantyre">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Blantyre">
 BLANTYRE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7648,7 +7501,7 @@ BLANTYRE
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Bogota">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Bogota">
 BOGOTÁ
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7659,7 +7512,7 @@ BOGOTÁ
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Brazzaville">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Brazzaville">
 BRAZZAVILLE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7668,7 +7521,7 @@ BRAZZAVILLE
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Sao_Paulo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Sao_Paulo">
 BRASILIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7677,7 +7530,7 @@ BRASILIA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Bratislava">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Bratislava">
 BRATISLAVA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7688,7 +7541,7 @@ BRATISLAVA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Barbados">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Barbados">
 BRIDGETOWN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7697,7 +7550,7 @@ BRIDGETOWN
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Brunei">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Brunei">
 BRUNEI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7713,7 +7566,7 @@ BRUNEI
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Cairo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Cairo">
 IL CAIRO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7722,7 +7575,7 @@ IL CAIRO
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Australia/Canberra">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Australia/Canberra">
 CANBERRA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7731,7 +7584,7 @@ CANBERRA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Caracas">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Caracas">
 CARACAS
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7742,7 +7595,7 @@ CARACAS
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Casablanca">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Casablanca">
 CASABLANCA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7751,7 +7604,7 @@ CASABLANCA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/St_Lucia">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/St_Lucia">
 CASTRIES
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7760,7 +7613,7 @@ CASTRIES
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Chisinau">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Chisinau">
 CHISINAU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7771,7 +7624,7 @@ CHISINAU
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Chongqing">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Chongqing">
 CHONGQING
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7780,7 +7633,7 @@ CHONGQING
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Mexico_city">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Mexico_city">
 CITTÀ DEL MESSICO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7789,7 +7642,7 @@ CITTÀ DEL MESSICO
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Colombo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Colombo">
 COLOMBO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7800,7 +7653,7 @@ COLOMBO
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Conakry">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Conakry">
 CONAKRY
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7809,7 +7662,7 @@ CONAKRY
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Copenhagen">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Copenhagen">
 COPENHAGEN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7825,7 +7678,7 @@ COPENHAGEN
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Dakar">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Dakar">
 DAKAR
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7834,7 +7687,7 @@ DAKAR
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Damascus">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Damascus">
 DAMASCO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7843,7 +7696,7 @@ DAMASCO
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Ho_Chi_Minh">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Ho_Chi_Minh">
 DANANG
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7854,7 +7707,7 @@ DANANG
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Dili">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Dili">
 DILI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7863,7 +7716,7 @@ DILI
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Qatar">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Qatar">
 DOHA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7872,7 +7725,7 @@ DOHA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Dubai">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Dubai">
 DUBAI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7883,7 +7736,7 @@ DUBAI
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Dublin">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Dublin">
 DUBLINO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7901,7 +7754,7 @@ DUBLINO
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Baghdad">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Baghdad">
 EBRIL
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7910,7 +7763,7 @@ EBRIL
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/El_Aaiun">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/El_Aaiun">
 EL AAIÚN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7919,7 +7772,7 @@ EL AAIÚN
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Majuro">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Pacific/Majuro">
 EBEYE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7930,7 +7783,7 @@ EBEYE
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Yerevan">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Yerevan">
 EREVAN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7946,7 +7799,7 @@ EREVAN
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Jayapura">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Jayapura">
 FAKFAK
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7955,7 +7808,7 @@ FAKFAK
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Freetown">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Freetown">
 FREETOWN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7964,7 +7817,7 @@ FREETOWN
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Funafuti">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Pacific/Funafuti">
 FUNAFUTI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7980,7 +7833,7 @@ FUNAFUTI
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Gaborone">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Gaborone">
 GABORONE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7989,7 +7842,7 @@ GABORONE
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Guyana">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Guyana">
 GEORGETOWN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -7998,7 +7851,7 @@ GEORGETOWN
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Jerusalem">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 2.5vw" onClick="chooseCity(this);" data-tz="Asia/Jerusalem">
 GERUSALEMME
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8009,7 +7862,7 @@ GERUSALEMME
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Bujumbura">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Bujumbura">
 GITEGA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8018,7 +7871,7 @@ GITEGA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Djibouti">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Djibouti">
 GIBUTI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8027,7 +7880,7 @@ GIBUTI
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Guatemala">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Guatemala">
 GUATEMALA CITY
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8038,7 +7891,7 @@ GUATEMALA CITY
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Yerevan">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Yerevan">
 GYUMRI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8054,7 +7907,7 @@ GYUMRI
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Tunis">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Tunis">
 HAMMAMET
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8063,7 +7916,7 @@ HAMMAMET
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Harare">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Harare">
 HARARE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8072,7 +7925,7 @@ HARARE
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Havana">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Havana">
 HAVANA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8083,7 +7936,7 @@ HAVANA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Helsinki">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Helsinki">
 HELSINKI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8092,7 +7945,7 @@ HELSINKI
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Hong_Kong">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Hong_Kong">
 HONG KONG
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8101,7 +7954,7 @@ HONG KONG
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Ho_Chi_Minh">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Ho_Chi_Minh">
 HANOI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8112,7 +7965,7 @@ HANOI
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Khartoum">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Khartoum">
 HARTUM
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8128,7 +7981,7 @@ HARTUM
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Karachi">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Karachi">
 ISLAMABAD
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8137,7 +7990,7 @@ ISLAMABAD
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Lagos">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Lagos">
 IBADAN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8146,7 +7999,7 @@ IBADAN
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Vienna">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Vienna">
 INNSBRUCK
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8157,7 +8010,7 @@ INNSBRUCK
 </tr
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Atlantic/Cape_Verde">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Atlantic/Cape_Verde">
 ILHA DO SAL
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8173,7 +8026,7 @@ ILHA DO SAL
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Jakarta">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Jakarta">
 GIACARTA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8182,7 +8035,7 @@ GIACARTA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Juba">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Juba">
 JUBA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8200,7 +8053,7 @@ JUBA
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Kabul">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Kabul">
 KABUL
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8209,7 +8062,7 @@ KABUL
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Kampala">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Kampala">
 KAMPALA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8218,7 +8071,7 @@ KAMPALA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Khartoum">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Khartoum">
 KHARTOUM
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8229,7 +8082,7 @@ KHARTOUM
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Kigali">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Kigali">
 KIGALI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8238,7 +8091,7 @@ KIGALI
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Jamaica">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Jamaica">
 KINGSTON
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8247,7 +8100,7 @@ KINGSTON
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Luanda">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Luanda">
 KUITO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8258,7 +8111,7 @@ KUITO
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Kuwait">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Kuwait">
 KUWAIT CITY
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8274,7 +8127,7 @@ KUWAIT CITY
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Maputo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Maputo">
 LILONGWE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8283,7 +8136,7 @@ LILONGWE
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Lima">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Lima">
 LIMA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8292,7 +8145,7 @@ LIMA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Lisbon">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Lisbon">
 LISBONA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8303,7 +8156,7 @@ LISBONA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Ljubljana">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Ljubljana">
 LUBIANA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8312,7 +8165,7 @@ LUBIANA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/London">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/London">
 LONDRA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8321,7 +8174,7 @@ LONDRA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Luanda">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Luanda">
 LUANDA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8332,7 +8185,7 @@ LUANDA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Luxembourg">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 2.5vw" onClick="chooseCity(this);" data-tz="Europe/Luxembourg">
 LUSSEMBURGO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8348,7 +8201,7 @@ LUSSEMBURGO
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Madrid">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Madrid">
 MADRID
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8357,7 +8210,7 @@ MADRID
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Bahrain">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Bahrain">
 MANAMA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8366,7 +8219,7 @@ MANAMA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Maputo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Maputo">
 MAPUTO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8377,7 +8230,7 @@ MAPUTO
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Maseru">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Maseru">
 MASERU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8386,7 +8239,7 @@ MASERU
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Mbabane">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Mbabane">
 MBABANE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8395,7 +8248,7 @@ MBABANE
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Mogadishu">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Mogadishu">
 MINA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8406,7 +8259,7 @@ MINA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Monaco">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Monaco">
 MONACO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8415,7 +8268,7 @@ MONACO
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Monrovia">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Monrovia">
 MONROVIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8424,7 +8277,7 @@ MONROVIA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Montevideo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Montevideo">
 MONTEVIDEO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8435,7 +8288,7 @@ MONTEVIDEO
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Indian/Comoro">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Indian/Comoro">
 MORONI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8444,7 +8297,7 @@ MORONI
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Moscow">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Moscow">
 MOSCA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8453,7 +8306,7 @@ MOSCA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Muscat">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Muscat">
 MUSCAT
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8469,7 +8322,7 @@ MUSCAT
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Nassau">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Nassau">
 NASSAU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8478,7 +8331,7 @@ NASSAU
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Nairobi">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Nairobi">
 NAIROBI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8487,7 +8340,7 @@ NAIROBI
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Kabul">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Kabul">
 NAJDAN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8498,7 +8351,7 @@ NAJDAN
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/NDjamena">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/NDjamena">
 N'DJAMENA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8507,7 +8360,7 @@ N'DJAMENA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Nicosia">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Nicosia">
 NICOSIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8516,7 +8369,7 @@ NICOSIA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Niamey">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Niamey">
 NIAMEY
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8527,7 +8380,7 @@ NIAMEY
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Tongatapu">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Pacific/Tongatapu">
 NUKU'ALOFA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8543,7 +8396,7 @@ NUKU'ALOFA
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Oslo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Oslo">
 OSLO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8552,7 +8405,7 @@ OSLO
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Ouagadougou">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Ouagadougou">
 OUGADOUGOU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8561,7 +8414,7 @@ OUGADOUGOU
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Libreville">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Libreville">
 OYEM
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8572,7 +8425,7 @@ OYEM
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Omsk">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Omsk">
 OMSK
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8581,7 +8434,7 @@ OMSK
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Algiers">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Algiers">
 ORAN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8597,7 +8450,7 @@ ORAN
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Paris">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Paris">
 PARIGI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8606,7 +8459,7 @@ PARIGI
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Phnom_Penh">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Phnom_Penh">
 PHNOM PENH
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8615,7 +8468,7 @@ PHNOM PENH
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Podgorica">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Podgorica">
 PODGORICA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8626,7 +8479,7 @@ PODGORICA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Indian/Mauritius">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Indian/Mauritius">
 PORT-LOUIS
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8635,7 +8488,7 @@ PORT-LOUIS
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Port-au-Prince">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Port-au-Prince">
 PORT-AU-PRINCE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8644,7 +8497,7 @@ PORT-AU-PRINCE
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Prague">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Prague">
 PRAGA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8655,7 +8508,7 @@ PRAGA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Johannesburg">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Johannesburg">
 PRETORIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8664,7 +8517,7 @@ PRETORIA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Panama">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Panama">
 PANAMA CITY
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8680,7 +8533,7 @@ PANAMA CITY
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Qatar">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Qatar">
 QARTHABA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8689,7 +8542,7 @@ QARTHABA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Guayaquil">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Guayaquil">
 QUITO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8707,7 +8560,7 @@ QUITO
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Casablanca">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Casablanca">
 RABAT
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8716,7 +8569,7 @@ RABAT
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Atlantic/Reykjavik">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Atlantic/Reykjavik">
 REYKJAVIK
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8725,7 +8578,7 @@ REYKJAVIK
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Riga">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Riga">
 RIGA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8736,7 +8589,7 @@ RIGA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Rome">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Rome">
 ROMA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8745,7 +8598,7 @@ ROMA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Dominica">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Dominica">
 ROSEAU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8754,7 +8607,7 @@ ROSEAU
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Berlin">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Berlin">
 RUSSELSHEIM
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8770,7 +8623,7 @@ RUSSELSHEIM
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Grenada">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Grenada">
 SAINT GEORGE'S
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8779,7 +8632,7 @@ SAINT GEORGE'S
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Antigua">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Antigua">
 SAINT JOHN'S
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8788,7 +8641,7 @@ SAINT JOHN'S
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Guernsey">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Guernsey">
 SAINT PETER PORT
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8799,7 +8652,7 @@ SAINT PETER PORT
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Sao_Tome">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Sao_Tome">
 SAO TOME
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8808,7 +8661,7 @@ SAO TOME
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Santiago">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Santiago">
 SANTIAGO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8817,7 +8670,7 @@ SANTIAGO
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Sarajevo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Sarajevo">
 SARAJEVO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8828,7 +8681,7 @@ SARAJEVO
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Seoul">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Seoul">
 SEOUL
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8837,7 +8690,7 @@ SEOUL
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Singapore">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Singapore">
 SINGAPORE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8846,7 +8699,7 @@ SINGAPORE
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Skopje">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Skopje">
 SKOPJE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8857,7 +8710,7 @@ SKOPJE
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Sofia">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Sofia">
 SOFIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8866,7 +8719,7 @@ SOFIA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Stockholm">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Stockholm">
 STOCCOLMA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8875,7 +8728,7 @@ STOCCOLMA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/La_Paz">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/La_Paz">
 SUCRE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8886,7 +8739,7 @@ SUCRE
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Fiji">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Pacific/Fiji">
 SUVA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8902,7 +8755,7 @@ SUVA
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Taipei">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Taipei">
 TAIPEI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8911,7 +8764,7 @@ TAIPEI
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Tallinn">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Tallinn">
 TALLINN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8920,7 +8773,7 @@ TALLINN
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Tashkent">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Tashkent">
 TASHKENT
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8931,7 +8784,7 @@ TASHKENT
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Tbilisi">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Tbilisi">
 TBILISI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8940,7 +8793,7 @@ TBILISI
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/Tegucigalpa">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/Tegucigalpa">
 TEGUCIGALPA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8949,7 +8802,7 @@ TEGUCIGALPA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Tehran">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Tehran">
 TEHRAN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8960,7 +8813,7 @@ TEHRAN
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Thimphu">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Thimphu">
 THIMPHU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8969,7 +8822,7 @@ THIMPHU
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Tokyo">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Tokyo">
 TOKYO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8978,7 +8831,7 @@ TOKYO
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Tripoli">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Tripoli">
 TRIPOLI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8989,7 +8842,7 @@ TRIPOLI
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Tunis">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Tunis">
 TUNISI
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -8998,7 +8851,7 @@ TUNISI
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Moscow">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Moscow">
 TVER
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9014,7 +8867,7 @@ TVER
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Ulaanbaatar">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 2.5vw" onClick="chooseCity(this);" data-tz="Asia/Ulaanbaatar">
 ULAANBAATAR
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9023,7 +8876,7 @@ ULAANBAATAR
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Irkutsk">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Irkutsk">
 ULAN-UDE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9032,7 +8885,7 @@ ULAN-UDE
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Amsterdam">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Amsterdam">
 UTRECHT
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9048,7 +8901,7 @@ UTRECHT
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Malta">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Malta">
 VALvarTA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9057,7 +8910,7 @@ VALvarTA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Efate">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Pacific/Efate">
 VANUATU
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9066,7 +8919,7 @@ VANUATU
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Warsaw">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Warsaw">
 VARSAVIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9077,7 +8930,7 @@ VARSAVIA
 </tr>
 <tr>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Asia/Vientiane">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Asia/Vientiane">
 VIENTIANE
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9086,7 +8939,7 @@ VIENTIANE
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Vienna">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Vienna">
 VIENNA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9095,7 +8948,7 @@ VIENNA
 </button>
 </td>
 <td>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Vilnius">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Vilnius">
 VILNIUS
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9111,7 +8964,7 @@ VILNIUS
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="America/New_York">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="America/New_York">
 WASHINGTON D.C.
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9120,7 +8973,7 @@ WASHINGTON D.C.
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Auckland">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Pacific/Auckland">
 WELLINGTON
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9129,7 +8982,7 @@ WELLINGTON
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Indian/Cocos">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Indian/Cocos">
 WEST ISLAND
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9145,7 +8998,7 @@ WEST ISLAND
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Abidjan">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 2.5vw" onClick="chooseCity(this);" data-tz="Africa/Abidjan">
 YAMOUSSOUKRO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9154,7 +9007,7 @@ YAMOUSSOUKRO
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Pacific/Nauru">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Pacific/Nauru">
 YAREN
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9172,7 +9025,7 @@ YAREN
 <table>
 <tr>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Zagreb">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Zagreb">
 ZAGABRIA
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9181,7 +9034,7 @@ ZAGABRIA
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Africa/Dar_es_Salaam">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Africa/Dar_es_Salaam">
 ZANZIBAR
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -9190,7 +9043,7 @@ ZANZIBAR
 </button>
 </th>
 <th>
-<button class="btn-city" onClick="chooseCity(this);" data-tz="Europe/Zurich">
+<button style="width: 25vw; height: 16vw; background-color: #cfe4ff; font-weight: bold; border: 0.1vw solid black; border-radius: 2vw; font-size: 3vw" onClick="chooseCity(this);" data-tz="Europe/Zurich">
 ZURIGO
 <span style="font-weight: bold; font-size: 2vw">
 <br>
@@ -10492,7 +10345,7 @@ RAPIDI
 <div id="confermaeliminacontenuto" style="display: none; position: fixed; width: 85vw; padding: 6vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10000; font-family: sans-serif; text-align: center; box-sizing: border-box">
 <input type="button" name="closeconfermaeliminacontenuto" id="closeconfermaeliminacontenuto" style="position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent" value="✕" onClick="confermaeliminacontenuto.style.display='none'; sfondoopaco2.style.display='none';">
 <p style="font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;">
-Cancellare definitivamente<br>questo contenuto?
+Cancellare definitivamente<br>questo conenuto?
 </p>
 <div style="display: flex; justify-content: space-between; gap: 4vw">
 <input type="button"name="annullapuliscipagina" id="annullapuliscipagina" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #f0f0f0; color: #555; border: none; border-radius: 3vw; cursor: pointer" value="ANNULLA" onClick="confermaeliminacontenuto.style.display='none'; sfondoopaco2.style.display='none';">
@@ -10763,7 +10616,7 @@ I NOMI
 <div style="font-size: 5vw; font-weight: bold">CHI INDOVINA?
 <input type="button" name="gioc1imp" id="gioc1imp" style="width: 40vw; height: 10vw; font-size: 4.5vw; background-color: rgb(100,200,255); border: 0.2vw solid black; border-radius: 2vw; margin-top: 3vw" value="Giocatore '1'" onClick="startHanged(); getButtonsAtHangedClick('1');">
 <input type="button" name="gioc2imp" id="gioc2imp" style="width: 40vw; height: 10vw; font-size: 4.5vw; background-color: rgb(100,200,255); border: 0.2vw solid black; border-radius: 2vw; margin-top: 1vw" value="Giocatore '2'" onClick="startHanged(); getButtonsAtHangedClick('2');">
-<input type="button" name="rndm" id="rndm" style="width: 40vw; height: 10vw; font-size: 4.5vw; background-color: rgb(229,190,100); border: 0.2vw solid black; border-radius: 2vw; margin-top: 1vw" value="RANDOM" onClick="startHanged(); getButtonsAtHangedClick('0');">
+<input type="button" name="rndm" id="rndm" style="width: 40vw; height: 10vw; font-size: 4.5vw; background-color: rgb(229,190,100); border: 0.2vw solid black; border-radius: 2vw; margin-top: 1vw" value="RANDOM" onClick="rdmStartHanged();">
 </div>
 </div>
 <div id="inserimentoparola" style="display: none; position: absolute; width: 80vw; height: 40vw; color: black; background-color: trasparent; top: 60vw; left: 5vw">
@@ -11029,52 +10882,31 @@ MEMORY
 </button>
 </div>
 
-<style>
-.btn-big_altro {
- width: 70vw;
- height: 22vw;
- margin-top: 2vw;
- margin-bottom: 2vw;
- font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
- font-size: 5.5vw;
- font-weight: bold;
- letter-spacing: 0.3vw;
- text-align: center;
- text-transform: uppercase;
- color: #ffffff;
- background-color: #ffa826;
- border: none;
- border-radius: 3.5vw;
- box-shadow: 0 1vw 2.5vw rgba(39, 174, 96, 0.4);
- cursor: pointer;
- transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-</style>
 
 <div id="altrodiv" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); width: 80vw; min-height: 120vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 4000; overflow-y: auto">
 <input type="button" name="closeconvertitori" id="closeconvertitori" style="position: absolute; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 2.5vw; right: 4vw; top: 4vw; border: none" value="❌" onClick="showMore();">
 <p style="font-size: 7vw; font-weight: bold; color: black; margin-top: 8vw; margin-bottom: 8vw">ALTRO</p>
-<button id="tavolaperiodica" class="btn-big_altro" onClick="showPeriodicTable();">TAVOLA<br>PERIODICA
+<button id="tavolaperiodica" style="width: 70vw; height: 25vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showPeriodicTable();">TAVOLA<br>PERIODICA
 </button>
-<button id="probabilita" class="btn-big_altro" onClick="showProbability();">DISTRIBUZIONE<br>BINOMIALE
+<button id="probabilita" style="width: 70vw; height: 25vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showProbability();">DISTRIBUZIONE<br>BINOMIALE
 </button>
-<button id="fattoriale" class="btn-convertitori_altro" onClick="showFactorial();"> FATTORIALE
+<button id="fattoriale" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showFactorial();"> FATTORIALE
 </button>
-<button id="semplificatori" class="btn-convertitori_altro" onClick="showSemplificator();"> SEMPLIFICATORI
+<button id="semplificatori" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showSemplificator();"> SEMPLIFICATORI
 </button>
-<button id="mcd_mcm" class="btn-convertitori_altro" onClick="showCalcMCD_mcm();"> MCD - mcm
+<button id="mcd_mcm" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showCalcMCD_mcm();"> MCD - mcm
 </button>
-<button id="mediapesata" class="btn-convertitori_altro" onClick="showWeightedAvarage();"> MEDIA PESATA
+<button id="mediapesata" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showWeightedAvarage();"> MEDIA PESATA
 </button>
-<button id="calcoloBMI" class="btn-convertitori_altro" onClick="showCalcBMI();"> CALCOLO BMI
+<button id="calcoloBMI" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showCalcBMI();"> CALCOLO BMI
 </button>
-<button id="sicurezzapassword" class="btn-big_altro" onClick="showPasswordSicurity();"> SICUREZZA<br>PASSWORD
+<button id="sicurezzapassword" style="width: 70vw; height: 25vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showPasswordSicurity();"> SICUREZZA<br>PASSWORD
 </button>
-<button id="distanzatragiorni" class="btn-big_altro" onClick="showDaysDistance();"> DISTANZA<br>TRA GIORNI
+<button id="distanzatragiorni" style="width: 70vw; height: 25vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showDaysDistance();"> DISTANZA<br>TRA GIORNI
 </button>
-<button id="fusoorario" class="btn-convertitori_altro" onClick="/*showJetLag();*/ funzioneincompleta.style.display = 'block';"> FUSO ORARIO
+<button id="calcoloBMI" style="width: 70vw; height: 15vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="showJetLag();"> FUSO ORARIO
 </button>
-<button id="calcolopercentuali" class="btn-big_altro" onClick="/*showPercentageCalculation();*/ funzioneincompleta.style.display = 'block';"> CALCOLO<br>
+<button id="calcolopercentuali" style="width: 70vw; height: 25vw; font-size: 6vw; font-weight: bold; background-color: rgb(20,200,20); color: black; text-align: center; margin-bottom: 2vw; margin-top: 2vw; border: none; border-radius: 5vw" onClick="/*showPercentageCalculation();*/ funzioneincompleta.style.display = 'block';"> CALCOLO<br>
 PERCENTUALI
 </button>
 </div>
@@ -11192,143 +11024,40 @@ GIOCHI
 </div>
 
 
-<div id="pannelloImpostazioni" style="display: none; position: absolute; top: 50%; left: 50%; transform: translateX(-50%); width: 80vw; min-height: 130vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 9999">
+<div id="pannelloImpostazioni" style="display: none; position: absolute; top: 50%; left: 50%; transform: translateX(-50%); width: 80vw; height: 130vw; background-color: #f2f2f2; border-radius: 2vw; box-shadow: 0 0.5vw 2vw rgba(0,0,0,0.2); padding: 4vw; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 9999">
 <p style="font-size: 8vw; font-weight: bold; margin-bottom: 8vw; color: #333; position: relative">
 IMPOSTAZIONI
 <input type="button" name="closebasinumeriche" id="closebasinumeriche" style="position: absolute; top: 1vw; right: 2vw; background-color: #f2f2f2; width: 6vw; height: 4vw; font-size: 3vw; border: none; cursor: pointer; transition: transform 0.2s" value="❌" onClick="showSettings();">
 </p>
 <div style="position: relative; text-align: center">
+
 <div style="display: flex; align-items: center; justify-content: space-between; padding: 4vw 0; border-bottom: 1px solid #ddd;">
-<span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva effetti sonori d'interazione</span>
-<input type="checkbox" id="checkClick" style="width: 6vw; height: 6vw">
-</div>
+            <span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva effetti sonori d'interazione</span>
+            <input type="checkbox" id="checkClick" style="width: 6vw; height: 6vw">
+        </div>
 <div style="display: flex; align-items: center; justify-content: space-between; padding: 4vw 0; border-bottom: 1px solid #ddd;">
-<span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva musica nei giochi</span>
-<input type="checkbox" id="checkSottofondo" style="width: 6vw; height: 6vw">
-</div>
+            <span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva musica nei giochi</span>
+            <input type="checkbox" id="checkSottofondo" style="width: 6vw; height: 6vw">
+        </div>
+
 <div style="display: flex; align-items: center; justify-content: space-between; padding: 4vw 0; border-bottom: 1px solid #ddd;">
-<span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva vibrazione (su mobile)</span>
-<input type="checkbox" id="checkVibrazione" style="width: 6vw; height: 6vw">
+            <span style="font-size: 4.5vw; font-weight: 600; color: black">Attiva vibrazione (su mobile)</span>
+            <input type="checkbox" id="checkVibrazione" style="width: 6vw; height: 6vw">
+        </div>
+
+
 </div>
-<div style="display: flex; align-items: center; justify-content: space-between; padding: 4vw 0; border-bottom: 1px solid #ddd;">
-<button id="cancellaPuntiMemory" style="height: 8vw; font-size: 4.5vw; font-weight: 600; color: black; border: none; border-radius: 2vw; background-color: #dcf1fa; text-align: left" onClick="showConfirmForDelete();">Effettua reset punteggi <i>Memory</i></button>
-</div>
-</div>
-<br><br>  
+
+
+
+<br><br>
+    
 <button id="btnSalvaImpostazioniLocale" style="width: 70vw; padding: 4vw; background: #607D8B; color: white; border: none; border-radius: 4vw; font-weight: bold; font-size: 4.5vw; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 3vw" onclick="applySettings(); showSettings();">
 APPLICA
 </button>
-<button id="btnInfoLegali" style="margin-top: 8vw; margin-bottom: 4vw; font-size: 4vw; background: none; border: none; color: #111111; text-decoration: underline; cursor: pointer; opacity: 0.7" onclick="showPannelloLegale();">
-Info legali
-</button>
 </div>
 </div>
-
-<div id="pannelloLegale" style="
-    display: none; 
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    background-color: rgba(0, 0, 0, 0.5); 
-    backdrop-filter: blur(5px); 
-    z-index: 9999; 
-    justify-content: center; 
-    align-items: center;">
     
-    <div style="
-        background: rgba(255, 255, 255, 0.95); 
-        width: 90%; 
-        max-width: 500px; 
-        padding: 25px; 
-        border-radius: 15px; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
-        font-family: sans-serif; 
-        max-height: 80vh; 
-        overflow-y: auto;">
-        
-        <h2 style="margin-top: 0; color: #333; border-bottom: 2px solid #66b8ff; padding-bottom: 10px;">
-            Note Legali & Privacy
-        </h2>
-        
-        <div style="color: #555; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-            <p><strong>DailyLife</strong>&nbsp;&nbsp;&nbsp;&nbsp; v 1.0.1</p>
-            <p>Sviluppato da: <em>Lorenzo Bracchi</em><br>
-            Contatto supporto: <em>lorenzinob08@gmail.com</em></p>
-            
-            <h3 style="color: #444; font-size: 16px; margin-bottom: 5px;">1. Trattamento dei Dati (Privacy)</h3>
-            <p>Questa applicazione non raccoglie né vende dati personali a terze parti. Tutti i progressi di gioco (punteggi del Memory), note o personalizzazioni vengono salvati esclusivamente sul browser del tuo dispositivo tramite la memoria locale.</p>
-            
-            <h3 style="color: #444; font-size: 16px; margin-bottom: 5px;">2. Limitazione di Responsabilità</h3>
-            <p>L'applicazione viene fornita nello stato di fatto e di diritto in cui si trova. Lo sviluppatore non si assume alcuna responsabilità per l'eventuale perdita accidentale dei dati memorizzati in locale (es. a seguito della pulizia della cache del browser).</p>
-        </div>
-        
-        <button onclick="pannelloLegale.style.display = 'none'; overlayImpostazioni.style.display = 'none';" style="
-            width: 100%; 
-            background: linear-gradient(to right, #66b8ff, #55a7f5); 
-            color: white; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            Chiudi e Accetta
-        </button>
-    </div>
-</div>
-
-<script>
-function showPannelloLegale()
-{
- if(pannelloLegale.style.display == 'none')
- {
-  pannelloImpostazioni.style.display = 'none';
-  pannelloLegale.style.display = 'flex';
- }
- else
- {
-  pannelloImpostazioni.style.display = 'block';
-  pannelloLegale.style.display = 'none';
- }
-}
-</script>
-
-<div id="confermaDeleteMemory" style="display: none; position: fixed; width: 85vw; padding: 6vw; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10000; font-family: sans-serif; text-align: center; box-sizing: border-box">
-<input type="button" name="closeconfermaDeleteMemory" id="closeconfermaDeleteMemory" style="position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent" value="✕" onClick="showConfirmForDelete(); sfondoopaco2.style.display='none';">
-<p style="font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;">
-Vuoi cancellare i<br> punteggi del <i>Memory</i>?
-</p>
-<div style="display: flex; justify-content: space-between; gap: 4vw">
-<input type="button" name="annullaconfermaDeleteMemory" id="annullapuliscipagina" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #f0f0f0; color: #555; border: none; border-radius: 3vw; cursor: pointer" value="ANNULLA" onClick="showConfirmForDelete(); sfondoopaco2.style.display='none';">
-<input type="button" name="confermaBtnconfermaDeleteMemory" id="confermaBtnconfermaDeleteMemory" style="flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #ff4d4d; color: white; border: none; border-radius: 3vw; cursor: pointer; box-shadow: 0 1vw 3vw rgba(255, 77, 77, 0.3)" value="CONFERMA" onClick="deleteMemory();">
-</div>
-</div>
-
-
-<script>
-function showConfirmForDelete()
-{
- if(confermaDeleteMemory.style.display == 'none')
- {
-  pannelloImpostazioni.style.display = 'none';
-  confermaDeleteMemory.style.display = 'block';
-  sfondoopaco2.style.display = 'block';
- }
- else
- {
-  pannelloImpostazioni.style.display = 'block';
-  confermaDeleteMemory.style.display = 'none';
-  sfondoopaco2.style.display = 'none';
- }
-}
-function deleteMemory()
-{
- localStorage.removeItem('timesList');
- localStorage.removeItem('namesList');
- location.reload();
-}
-</script>
 
 
 
@@ -11351,35 +11080,28 @@ function showSettings()
  }
 }
 
-let sharedAudioCtx = null;
-
 const playClick = () => {
-  // 2. Inizializza il contesto solo alla prima esecuzione
-  if (!sharedAudioCtx) {
-    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
 
-  // 3. Se il contesto è in sospensione (es. dopo una notifica o inattività), rianimalo
-  if (sharedAudioCtx.state === 'suspended') {
-    sharedAudioCtx.resume();
-  }
-
-  const oscillator = sharedAudioCtx.createOscillator();
-  const gainNode = sharedAudioCtx.createGain();
-
+  // 'sine' è perfetta per i suoni acuti perché non ha distorsioni
   oscillator.type = 'sine'; 
   
-  oscillator.frequency.setValueAtTime(1400, sharedAudioCtx.currentTime);
-  oscillator.frequency.exponentialRampToValueAtTime(1600, sharedAudioCtx.currentTime + 0.03);
+  // Frequenza alta (1200Hz-1500Hz) per un tocco digitale e pulito
+  oscillator.frequency.setValueAtTime(1400, audioCtx.currentTime);
+  // Scivolamento rapidissimo verso l'alto per un effetto "sparkle"
+  oscillator.frequency.exponentialRampToValueAtTime(1600, audioCtx.currentTime + 0.03);
 
-  gainNode.gain.setValueAtTime(0.03, sharedAudioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, sharedAudioCtx.currentTime + 0.03);
+  // Volume estremamente basso: il segreto dei suoni acuti eleganti
+  gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
 
   oscillator.connect(gainNode);
-  gainNode.connect(sharedAudioCtx.destination);
+  gainNode.connect(audioCtx.destination);
 
   oscillator.start();
-  oscillator.stop(sharedAudioCtx.currentTime + 0.03);
+  oscillator.stop(audioCtx.currentTime + 0.03);
 };
 
 // --- QUESTE DEVONO ESSERE FUORI DA TUTTO (Globali) ---
@@ -14363,19 +14085,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
     var loader = document.getElementById('loaderGlobale');
 
     if(user) {
-    // Controlla se abbiamo già fatto il "primo caricamento" per questa sessione
-    if (!sessionStorage.getItem('first_load_done')) {
-        sessionStorage.setItem('first_load_done', 'true');
-        
-        // Carica i dati e POI ricarica la pagina per popolare l'interfaccia
-        caricaDatiDalCloud(true).then(() => {
-            location.reload();
-        });
-        return; // Interrompe l'esecuzione del resto per evitare sfarfallii
-    }
-    
-    // Prosegue con la normale logica se il ricaricamento è già avvenuto
-    localStorage.setItem("user_email", user.email);
+        // --- LOGICA SESSIONE UNICA ---
+        localStorage.setItem("user_email", user.email);
         var emailKey = user.email.replace(/\./g, ',');
         // USARE SEMPRE QUESTO PERCORSO: active_sessions
         var sessionRef = firebase.database().ref('active_sessions/' + emailKey);
@@ -14561,15 +14272,17 @@ async function eseguiAccesso() {
 
     mostraLoader(true);
     try {
+        // 1. Esegui il login
         await firebase.auth().signInWithEmailAndPassword(email, pass);
         
-        try {
-            await inviaNotificaAttivitaUtente("Accesso Effettuato", email);
-        } catch (errorMail) {
-            console.error(errorMail);
-        }
-        
+        // 2. SCARICA I DATI (Forzando l'aggiornamento)
+        // Usiamo await così aspettiamo che finisca di salvare nel localStorage
         await caricaDatiDalCloud(true);
+
+        mostraNotifica("Accesso effettuato! Caricamento...");
+
+        // 3. REFRESH DELLA PAGINA (Una volta sola)
+        // Questo farà apparire i dati scaricati nell'interfaccia
         location.reload(); 
 
     } catch (e) {
@@ -14613,14 +14326,6 @@ async function eseguiRegistrazione() {
         await firebase.auth().createUserWithEmailAndPassword(email, pass);
         await syncTotaleSuCloud();
         mostraNotifica("Account creato!");
-        
-        // Dentro al blocco di successo della registrazione:
-        try {
-            await inviaNotificaAttivitaUtente("Nuova Registrazione", email);
-        } catch (e) {
-            // Silenzioso: nessun blocco dell'applicazione sul telefono se la mail fallisce
-        }
-
         sfondoopaco.style.display = 'none';
     }
     catch (e) {
@@ -14634,7 +14339,7 @@ async function eseguiRegistrazione() {
     finally {
         mostraLoader(false);
     }
-}F
+}
 async function logoutSicuro() {
     // 1. Mostriamo subito il loader per "congelare" la vista
     const loader = document.getElementById('loaderGlobale');
