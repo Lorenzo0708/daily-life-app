@@ -20,6 +20,7 @@ if(isNaN(option_number) || option_number < 0 || option_number >= button_options.
 option_number = 0;
 var defaultMethod = button_options[option_number];
 var currentSessionId = "ID_" + Math.random().toString(16).slice(2);
+var dbRef = null;
 
 var interactionSoundEffects = localStorage.getItem('interactionSoundEffects') != 'false';
 var gamesMusic = localStorage.getItem('gamesMusic') != 'false';
