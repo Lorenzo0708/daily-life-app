@@ -58,8 +58,6 @@ Chiudi
 </button>
 </div>
 
-<div id="toast-container" style="position: fixed; bottom: 5.13vw; left: 50%; transform: translateX(-50%); z-index: 20000; pointer-events: none"></div>
-
 
 
 
@@ -102,7 +100,7 @@ Chiudi
 <th style="width: 40vw"></th>
 <th>
 <div style="font-size: 3vw; font-weight: 600; color: #dddddd; margin-top: 2vw; margin-right: 2vw; text-align: right">
-Versione: 1.0.3
+Versione: 1.0.2
 </div>
 <div style="display: flex; gap: 2vw; margin-top: 3vw; justify-content: flex-start; margin-bottom: 2vw">
 <button id="calcbtn" style="width: 12vw; height: 12vw; border-radius: 50%; background-color: rgba(255,255,255,0.25); backdrop-filter: blur(6px); color: #000; font-size: 2.5vw; font-weight: bold; border: 0.15vw solid rgba(0,0,0,0.2); box-shadow: 0 0.3vw 1vw rgba(0,0,0,0.25); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; margin-right: 1.5vw" onClick="showCalc();">
@@ -415,14 +413,14 @@ SETTIMANA
 
 </div>
 <div id="containercalc" class="general-container">
-<div id="calc1" class="converter-container">
+<div id="calc1" style="display:none; position:absolute; top:0; left:50%; transform:translateX(-50%); width:80vw; min-height:130vw; background-color:#f2f2f2; border-radius:2vw; box-shadow:0 0.5vw 2vw rgba(0,0,0,0.2); padding:4vw; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index:9999">
 <input type="button" name="closeconvertitore" id="closeconvertitore" class="close-button" value="❌" onClick="calc1.style.display = 'none'; cancCalc();">
 <div id="bottonimassa" style="display: none; margin-top: 14vw">
 <table>
 <tr>
 <th>
-<input type="button" name="kg" id="kg" class="converter-buttons width-mass font_size-mass" value="CHILOGRAMMI - (Kg)" onClick="changeColors('Kg');">
-<input type="button" name="lbs" id="lbs" class="converter-buttons width-mass font_size-mass" value="POUNDS - (lbs)" onClick="changeColors('lbs');">
+<input type="button" name="kg" id="kg" style="width: 32vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.8vw; font-weight: bold; margin-right: 0.5vw; border-radius: 1vw; cursor: pointer" value="CHILOGRAMMI - (Kg)" onClick="changeColors('Kg');">
+<input type="button" name="lbs" id="lbs" style="width: 32vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.8vw; font-weight: bold; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="POUNDS - (lbs)" onClick="changeColors('lbs');">
 </th>
 </tr>
 </table>
@@ -431,9 +429,9 @@ SETTIMANA
 <table>
 <tr>
 <th>
-<input type="button" name="g" id="g" class="converter-buttons width-degrees font_size-degrees" value="GRADI - (°)" onClick="changeColors('°');">
-<input type="button" name="rad" id="rad" class="converter-buttons width-degrees font_size-degrees" value="RADIANTI - (rad)" onClick="changeColors('rad');">
-<input type="button" name="grad" id="grad" class="converter-buttons width-degrees font_size-degrees" value="GRADIENTI - (grad)" onClick="changeColors('grad');">
+<input type="button" name="g" id="g" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.2vw; font-weight: bold; margin-right: 0.5vw; border-radius: 1vw; cursor: pointer" value="GRADI - (°)" onClick="changeColors('°');">
+<input type="button" name="rad" id="rad" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.2vw; font-weight: bold; margin-right: 0.5vw; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="RADIANTI - (rad)" onClick="changeColors('rad');">
+<input type="button" name="grad" id="grad" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.2vw; font-weight: bold; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="GRADIENTI - (grad)" onClick="changeColors('grad');">
 </th>
 </tr>
 </table>
@@ -442,9 +440,9 @@ SETTIMANA
 <table>
 <tr>
 <th>
-<input type="button" name="k" id="k" class="converter-buttons width-temperature font_size-temperature" value="KELVIN - (k)" onClick="changeColors('k');">
-<input type="button" name="cels" id="cels" class="converter-buttons width-temperature font_size-temperature" value="CELSIUS - (°C)" onClick="changeColors('°C');">
-<input type="button" name="far" id="far" class="converter-buttons width-temperature font_size-temperature" value="FAHRENHEIT - (°f)" onClick="changeColors('°f');">
+<input type="button" name="k" id="k" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.3vw; font-weight: bold; margin-right: 0.5vw; border-radius: 1vw; cursor: pointer" value="KELVIN - (k)" onClick="changeColors('k');">
+<input type="button" name="cels" id="cels" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.3vw; font-weight: bold; margin-right: 0.5vw; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="CELSIUS - (°C)" onClick="changeColors('°C');">
+<input type="button" name="far" id="far" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.3vw; font-weight: bold; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="FAHRENHEIT - (°f)" onClick="changeColors('°f');">
 </th>
 </tr>
 </table>
@@ -453,7 +451,7 @@ SETTIMANA
 <table>
 <tr>
 <th>
-<input type="button" name="kmh" id="kmh" class="converter-buttons width-speeds font_size-speeds" value="CHILOMETRI - (km)" onClick="changeColors('km');">
+<input type="button" name="kmh" id="kmh" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.3vw; font-weight: bold; margin-right: 0.5vw; border-radius: 1vw; cursor: pointer" value="CHILOMETRI - (km)" onClick="changeColors('km');">
 <input type="button" name="mi" id="mi" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.3vw; font-weight: bold; margin-right: 0.5vw; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="MIGLIA - (mi)" onClick="changeColors('mi');">
 <input type="button" name="kn" id="kn" style="width: 24vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.3vw; font-weight: bold; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="NODI - (kn)" onClick="changeColors('kn');">
 </th>
@@ -464,10 +462,10 @@ SETTIMANA
 <table>
 <tr>
 <th>
-<input type="button" name="mt" id="mt" class="converter-buttons width-lengths font_size-lenghts" value="METRI - (m)" onClick="changeColors('m');">
-<input type="button" name="ft" id="ft" class="converter-buttons width-lengths font_size-lenghts" value="PIEDI - (ft)" onClick="changeColors('ft');">
-<input type="button" name="inc" id="inc" class="converter-buttons width-lengths font_size-lenghts" value="POLLICI - (&quot;)" onClick="changeColors('&quot;');">
-<input type="button" name="yd" id="yd" class="converter-buttons width-lengths font_size-lenghts" value="YARD - (yd)" onClick="changeColors('yd');">
+<input type="button" name="mt" id="mt" style="width: 17vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.4vw; font-weight: bold; margin-right: 0.5vw; border-radius: 1vw; cursor: pointer" value="METRI - (m)" onClick="changeColors('m');">
+<input type="button" name="ft" id="ft" style="width: 17vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.4vw; font-weight: bold; margin-right: 0.5vw; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="PIEDI - (ft)" onClick="changeColors('ft');">
+<input type="button" name="inc" id="inc" style="width: 17vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.4vw; font-weight: bold; margin-right: 0.5vw; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="POLLICI - (&quot;)" onClick="changeColors('&quot;');">
+<input type="button" name="yd" id="yd" style="width: 17vw; height: 12vw; background-color: #ff5500; border: none; color: black; font-size: 2.4vw; font-weight: bold; margin-left: 0.5vw; border-radius: 1vw; cursor: pointer" value="YARD - (yd)" onClick="changeColors('yd');">
 </th>
 </tr>
 </table>
@@ -475,74 +473,74 @@ SETTIMANA
 <table style="margin-top: 1.2vw">
 <tr>
 <th>
-<input type="text" name="prima" id="prima" class="converter-texts" readonly>
-<input type="text" name="seconda" id="seconda" class="converter-texts text-border text-font_size" readonly>
+<input type="text" name="prima" id="prima" style="font-size: 11vw; width: 50vw; height: 14vw; background-color: #f5f5f5" readonly>
+<input type="text" name="seconda" id="seconda" style="font-size: 11vw; width: 15vw; height: 14vw; background-color: #f5f5f5; border: none; text-align: center" readonly>
 <div id="secondariga" style="display: none">
-<input type="text" name="quarta" id="quarta" class="converter-texts" readonly>
-<input type="text" name="quinta" id="quinta" class="converter-texts text-border text-font_size" readonly>
+<input type="text" name="quarta" id="quarta" style="font-size: 11vw; width: 50vw; height: 14vw; background-color: #f5f5f5" readonly>
+<input type="text" name="quinta" id="quinta" style="font-size: 11vw; width: 15vw; height: 14vw; background-color: #f5f5f5; border: none; text-align: center" readonly>
 </div>
 <div id="terzariga" style="display: none">
-<input type="text" name="sesta" id="sesta" class="converter-texts" readonly>
-<input type="text" name="settima" id="settima" class="converter-texts text-border text-font_size" readonly>
+<input type="text" name="sesta" id="sesta" style="font-size: 11vw; width: 50vw; height: 14vw; background-color: #f5f5f5" readonly>
+<input type="text" name="settima" id="settima" style="font-size: 11vw; width: 15vw; height: 14vw; background-color: #f5f5f5; border: none; text-align: center" readonly>
 </div>
 </tr>
 </table>
 <table style="margin-top: 1vw">
 <tr>
 <th>
-<input type="button" name="c" id="c" class="converter-buttons width-canc font_size-canc" value="C" onClick="cancCalc();">
+<input type="button" name="c" id="c" style="background-color: #ff5500; border: none; color: black; font-size: 8vw; width: 12vw; height: 12vw; margin-right: 0.7vw; border-radius: 1vw; cursor: pointer" value="C" onClick="cancCalc();">
 </th>
 <th>
 <input type="button" name="rtre" id="rtre" style="background-color: #00d9ff; border: none; color: black; font-size: 8vw; width: 12vw; height: 12vw; margin-right: 0.8vw; border-radius: 1vw; cursor: pointer"  value="←" onClick="backSpace();">
 </th>
 <th>
-<input type="text" name="terza" id="terza" class="converter-main_text" value="0" readonly>
+<input type="text" name="terza" id="terza" style="font-size: 10vw; width: 39.5vw; height: 12vw; background-color: #f5f5f5" value="0" readonly>
 </th>
 </tr>
 </table>
 <table>
 <tr>
 <th>
-<input type="button" name="b7" id="b7" class="converter-numbers" value="7" onClick="writeNumber(7);">
+<input type="button" name="b7" id="b7" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="7" onClick="writeNumber(7);">
 </th>
 <th>
-<input type="button" name="b8" id="b8" class="converter-numbers" value="8" onClick="writeNumber(8);">
+<input type="button" name="b8" id="b8" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="8" onClick="writeNumber(8);">
 </th>
 <th>
-<input type="button" name="b9" id="b9" class="converter-numbers" value="9" onClick="writeNumber(9);">
+<input type="button" name="b9" id="b9" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="9" onClick="writeNumber(9);">
 </th>
 </tr>
 <tr>
 <td>
-<input type="button" name="b4" id="b4" class="converter-numbers" value="4" onClick="writeNumber(4);">
+<input type="button" name="b4" id="b4" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="4" onClick="writeNumber(4);">
 </td>
 <td>
-<input type="button" name="b5" id="b5" class="converter-numbers" value="5" onClick="writeNumber(5);">
+<input type="button" name="b5" id="b5" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="5" onClick="writeNumber(5);">
 </td>
 <td>
-<input type="button" name="b6" id="b6" class="converter-numbers" value="6" onClick="writeNumber(6);">
-</td>
-</tr>
-<tr>
-<td>
-<input type="button" name="b1" id="b1" class="converter-numbers" value="1" onClick="writeNumber(1);">
-</td>
-<td>
-<input type="button" name="b2" id="b2" class="converter-numbers" value="2" onClick="writeNumber(2);">
-</td>
-<td>
-<input type="button" name="b3" id="b3" class="converter-numbers" value="3" onClick="writeNumber(3);">
+<input type="button" name="b6" id="b6" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="6" onClick="writeNumber(6);">
 </td>
 </tr>
 <tr>
 <td>
-<input type="button" name="n" id="n" class="converter-functions" value="+/-" onClick="oppositeNumber();">
+<input type="button" name="b1" id="b1" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointe; margin-bottom: 2vwr"  value="1" onClick="writeNumber(1);">
 </td>
 <td>
-<input type="button" name="zero" id="zero" class="converter-numbers" value="0" onClick="writeNumber(0);">
+<input type="button" name="b2" id="b2" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer; margin-bottom: 2vw"  value="2" onClick="writeNumber(2);">
 </td>
 <td>
-<button type="button" class="converter-functions" onclick="writePoint();">
+<input type="button" name="b3" id="b3" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer; margin-bottom: 2vw"  value="3" onClick="writeNumber(3);">
+</td>
+</tr>
+<tr>
+<td>
+<input type="button" name="n" id="n" style="border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; background-color: #ffbb00; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="+/-" onClick="oppositeNumber();">
+</td>
+<td>
+<input type="button" name="zero" id="zero" style="background-color: #4CAF50; border: none; color: black; font-size: 8vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer"  value="0" onClick="writeNumber(0);">
+</td>
+<td>
+<button type="button" style="background-color: #ffbb00; border: none; color: black; font-size: 11vw; width: 20vw; height: 12vw; margin: 0.8vw; border-radius: 1vw; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="writePoint();">
 <span style="display:inline-block; transform: translateY(-15px);">,</span>
 </button>
 </td>
@@ -572,23 +570,23 @@ BINOMIALE
 <input type="button" name="closeprobabilita" id="closeprobabilita" class="close-button" value="❌" onClick="showProbability();">
 </p>
 <div style="text-align: left">
-<input type="button" name="cosacalolo1" id="cosacalolo1" class="question-mark" value="?" onClick="showCalculationsInfo('0');">
-<p class="paragraph-binomial_distribution">
+<input type="button" name="cosacalolo1" id="cosacalolo1" style="position: absolute; width: 12vw; height: 12vw; top: 28vw; right: 6vw; color: blue; background-color: transparent; border: 0.1vw solid black; border: none; border-radius: 2vw; font-size: 6vw; font-weight: bold" value="?" onClick="showCalculationsInfo('0');">
+<p style="font-size: 4.5vw; font-weight: 600; color: black">
 Numero di esperimenti<br>
-<input type="text" name="numeroesp" id="numeroesp" class="binomial_distribution-text" value="" placeholder="R1>0">
-<input type="button" name="info1" id="info1" class="information-button" value="i" onClick="showCalculationsInfo('1');">
+<input type="text" name="numeroesp" id="numeroesp" style="width: 50vw; height: 7vw; font-size: 4vw; border-radius: 2vw; background-color: #d7ebf9; margin-top: 1vw" value="" placeholder="R1>0">
+<input type="button" name="info1" id="info1" style="width: 6vw; height: 6vw; background-color: #cccccc; border-radius: 50%; font-size: 4vw; font-style: Italic" value="i" onClick="showCalculationsInfo('1');">
 <input type="button" name="canc1" id="canc1" style="position: relative; width: 6vw; height: 6vw; right: 15vw; top: 0.5vw; color: gray; background-color: transparent; border: none; font-size: 6vw; font-weight: bold; z-index: 10000; padding: 0; line-height: 6vw; text-align: center" value="×" onClick="numeroesp.value = ''; risultato1.innerHTML = '';">
 </p>
-<p class="paragraph-binomial_distribution">
+<p style="font-size: 4.5vw; font-weight: 600; color: black">
 Volte si spetta accadi l'evento<br>
-<input type="text" name="numeroevento" id="numeroevento" class="binomial_distribution-text" value="" placeholder="R2≤R1">
-<input type="button" name="info2" id="info2" class="information-button" value="i" onClick="showCalculationsInfo('2');">
+<input type="text" name="numeroevento" id="numeroevento" style="width: 50vw; height: 7vw; font-size: 4vw; border-radius: 2vw; background-color: #d7ebf9; margin-top: 1vw" value="" placeholder="R2≤R1">
+<input type="button" name="info2" id="info2" style="width: 6vw; height: 6vw; background-color: #cccccc; border-radius: 50%; font-size: 4vw; font-style: Italic" value="i" onClick="showCalculationsInfo('2');">
 <input type="button" name="canc2" id="canc2" style="position: relative; width: 6vw; height: 6vw; right: 15vw; top: 0.5vw; color: gray; background-color: transparent; border: none; font-size: 6vw; font-weight: bold; z-index: 10000; padding: 0; line-height: 6vw; text-align: center" value="×" onClick="numeroevento.value = ''; risultato1.innerHTML = '';">
 </p>
-<p class="paragraph-binomial_distribution">
+<p style="font-size: 4.5vw; font-weight: 600; color: black">
 Probabilità che si verifichi l'evento<br>
-<input type="text" name="numeroverifica" id="numeroverifica" class="binomial_distribution-text" value="" placeholder="R3≥0 - R3≤1">
-<input type="button" name="info3" id="info3" class="information-button" value="i" onClick="showCalculationsInfo('3');">
+<input type="text" name="numeroverifica" id="numeroverifica" style="width: 50vw; height: 7vw; font-size: 4vw; border-radius: 2vw; background-color: #d7ebf9; margin-top: 1vw" value="" placeholder="R3≥0 - R3≤1">
+<input type="button" name="info3" id="info3" style="width: 6vw; height: 6vw; background-color: #cccccc; border-radius: 50%; font-size: 4vw; font-style: Italic" value="i" onClick="showCalculationsInfo('3');">
 <input type="button" name="canc3" id="canc3" style="position: relative; width: 6vw; height: 6vw; right: 15vw; top: 0.5vw; color: gray; background-color: transparent; border: none; font-size: 6vw; font-weight: bold; z-index: 10000; padding: 0; line-height: 6vw; text-align: center" value="×" onClick="numeroverifica.value = ''; risultato1.innerHTML = '';">
 <input type="button" name="apricalcolatrice" id="apricalcolatrice" style="position: relative; right: 9vw; top: 0.8vw; background-color: transparent; font-size: 6vw; border: none" value="🔢" onClick="showCalcForProbability();">
 </p>
@@ -4294,7 +4292,7 @@ Info legali
         </h2>
         
         <div style="color: #555; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-            <p><strong>DailyLife</strong>&nbsp;&nbsp;&nbsp;&nbsp; v 1.0.3</p>
+            <p><strong>DailyLife</strong>&nbsp;&nbsp;&nbsp;&nbsp; v 1.0.2</p>
             <p>Sviluppato da: <em>Lorenzo Bracchi</em><br>
             Contatto supporto: <em>lorenzinob08@gmail.com</em></p>
             
@@ -4740,7 +4738,7 @@ Il calcolo verrà eseguito ugualmente.</div>
 
 
 
-z
+
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
