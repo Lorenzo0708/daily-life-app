@@ -203,27 +203,32 @@ firebase.auth().onAuthStateChanged(async (user) => {
     if (timestampCloud >= timestampLocale) {
      localStorage.setItem("ultimoAggiornamento", timestampCloud);
      for (var chiave in datiCloud) {
-      localStorage.setItem(chiave, datiCloud[chiave]);
+      if (chiave !== "datiAppCompleti" && chiave !== "dati") {
+       if (typeof datiCloud[chiave] === 'object') {
+        localStorage.setItem(chiave, JSON.stringify(datiCloud[chiave]));
+       } else {
+        localStorage.setItem(chiave, datiCloud[chiave]);
+       }
+      }
      }
      if (localStorage.getItem("timesList")) {
-      timesList = JSON.parse(localStorage.getItem("timesList"));
+      try {
+       timesList = JSON.parse(localStorage.getItem("timesList"));
+      } catch(e) {
+       timesList = [];
+      }
      }
      if (localStorage.getItem("namesList")) {
-      namesList = JSON.parse(localStorage.getItem("namesList"));
+      try {
+       namesList = JSON.parse(localStorage.getItem("namesList"));
+      } catch(e) {
+       namesList = [];
+      }
      }
-
-     if (timesList && !Array.isArray(timesList)) {
-      timesList = Object.values(timesList);
-     }
-     if (namesList && !Array.isArray(namesList)) {
-      namesList = Object.values(namesList);
-     }
-
      if (timesList && !Array.isArray(timesList)) { timesList = Object.values(timesList); }
-if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
-
-if (timesList && timesList.length > 0) {
- var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
+     if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
+     if (timesList && timesList.length > 0) {
+      var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
       paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
       timesList = paired.map(p => p.time);
       namesList = paired.map(p => p.name);
@@ -9737,62 +9742,8 @@ function chiudiPannello()
  document.getElementById('overlayAccount').style.display = 'none';
  document.getElementById('pannelloAccount').style.display = 'none';
 }
-var dbRef = null;
-firebase.auth().onAuthStateChanged(async (user) => {
- var infoEmailPnl = document.getElementById('infoEmailPannello');
- var opzioniGuest = document.getElementById('opzioniGuest');
- var opzioniUser = document.getElementById('opzioniUser');
- var btnChiudi = document.getElementById('btnChiudiPannello');
- var loader = document.getElementById('loaderGlobale');
- if(user) {
-  localStorage.setItem("user_email", user.email);
-  var emailKey = user.email.replace(/\./g, ',');
-  var sessionRef = firebase.database().ref('active_sessions/' + emailKey);
-  sessionRef.set({ id: currentSessionId, time: Date.now() });
-  sessionRef.on('value', (snapshot) => {
-   var data = snapshot.val();
-   if (data && data.id !== currentSessionId) {
-    sessionRef.off();
-    bloccaAccessoMultiplo();
-   }
-  });
-  dbRef = firebase.database().ref('users/' + user.uid + '/dati');
-  dbRef.on('value', (snapshot) => {
-   var datiCloud = snapshot.val();
-   var datiLocaliRaw = localStorage.getItem("datiAppCompleti");
-   var timestampLocale = 0;
-   if (datiLocaliRaw) {
-    var parsedLocale = JSON.parse(datiLocaliRaw);
-    timestampLocale = parsedLocale.ultimoAggiornamento || 0;
-   }
-   if (datiCloud) {
-    var timestampCloud = datiCloud.ultimoAggiornamento || 0;
-    if (timestampCloud >= timestampLocale) {
-     timesList = datiCloud.timesList || [];
-     namesList = datiCloud.namesList || [];
-     localStorage.setItem("datiAppCompleti", JSON.stringify(datiCloud));
-     localStorage.setItem("timesList", JSON.stringify(timesList));
-     localStorage.setItem("namesList", JSON.stringify(namesList));
-     if (timesList && timesList.length > 0) {
-      var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
-      paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
-      timesList = paired.map(p => p.time);
-      namesList = paired.map(p => p.name);
-     }
-     if (typeof printTimes === 'function') {
-      printTimes();
-     }
-    }
-   }
-  });
-  aggiornaAvatar(user.email);
-  if(infoEmailPnl) infoEmailPnl.innerText = user.email;
-  if(opzioniGuest) opzioniGuest.style.display = 'none';
-  if(opzioniUser) opzioniUser.style.display = 'block';
-  if(btnChiudi) btnChiudi.style.display = 'block';
-  if(loader) loader.style.display = 'none';
- }
-});
+
+
 
 var originalSetItem = localStorage.setItem;
 localStorage.setItem = function(key, value) {
