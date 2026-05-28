@@ -93,8 +93,11 @@ window.onload = function() {
   namesList = Object.values(namesList);
  }
 
- if(timesList && timesList.length > 0) {
-  var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
+ if (timesList && !Array.isArray(timesList)) { timesList = Object.values(timesList); }
+if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
+
+if(timesList && timesList.length > 0) {
+ var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
   paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
   timesList = paired.map(p => p.time);
   namesList = paired.map(p => p.name);
@@ -216,8 +219,11 @@ firebase.auth().onAuthStateChanged(async (user) => {
       namesList = Object.values(namesList);
      }
 
-     if (timesList && timesList.length > 0) {
-      var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
+     if (timesList && !Array.isArray(timesList)) { timesList = Object.values(timesList); }
+if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
+
+if (timesList && timesList.length > 0) {
+ var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
       paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
       timesList = paired.map(p => p.time);
       namesList = paired.map(p => p.name);
@@ -295,7 +301,7 @@ function salvaDatiSincronizzati() {
   namesList: namesList,
   ultimoAggiornamento: Date.now()
  };
- localStorage.setItem("datiAppCompleti", JSON.stringify(pacchetto));
+ //localStorage.setItem("datiAppCompleti", JSON.stringify(pacchetto));
  localStorage.setItem("timesList", JSON.stringify(pacchetto.timesList));
  localStorage.setItem("namesList", JSON.stringify(pacchetto.namesList));
  if (dbRef) {
