@@ -203,7 +203,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
     if (timestampCloud >= timestampLocale) {
      localStorage.setItem("ultimoAggiornamento", timestampCloud);
      for (var chiave in datiCloud) {
-      if (chiave !== "datiAppCompleti" && chiave !== "dati") {
+      if (chiave !== "datiAppCompleti" && chiave !== "dati" && chiave !== "datiLocali") {
        if (typeof datiCloud[chiave] === 'object') {
         localStorage.setItem(chiave, JSON.stringify(datiCloud[chiave]));
        } else {
