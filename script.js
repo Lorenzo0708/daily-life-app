@@ -197,42 +197,51 @@ firebase.auth().onAuthStateChanged(async (user) => {
   dbRef = firebase.database().ref('users/' + user.uid + '/dati');
   dbRef.on('value', (snapshot) => {
    var datiCloud = snapshot.val();
-   var timestampLocale = Number(localStorage.getItem("ultimoAggiornamento") || 0);
    if (datiCloud) {
     var timestampCloud = datiCloud.ultimoAggiornamento || 0;
-    if (timestampCloud >= timestampLocale) {
-     localStorage.setItem("ultimoAggiornamento", timestampCloud);
-     for (var chiave in datiCloud) {
-  if (chiave !== "datiAppCompleti") {
-  localStorage.setItem(chiave, datiCloud[chiave]);
- }
-}
-     if (localStorage.getItem("timesList")) {
+    localStorage.setItem("ultimoAggiornamento", timestampCloud);
+    
+    for (var chiave in datiCloud) {
+     if (chiave !== "datiAppCompleti" && chiave !== "dati" && chiave !== "datiLocali") {
+      if (typeof datiCloud[chiave] === 'object') {
+       localStorage.setItem(chiave, JSON.stringify(datiCloud[chiave]));
+      } else {
+       localStorage.setItem(chiave, datiCloud[chiave]);
+      }
+     }
+    }
+
+    if (localStorage.getItem("timesList")) {
+     try {
       timesList = JSON.parse(localStorage.getItem("timesList"));
+     } catch(e) {
+      timesList = [];
      }
-     if (localStorage.getItem("namesList")) {
+    } else {
+     timesList = [];
+    }
+
+    if (localStorage.getItem("namesList")) {
+     try {
       namesList = JSON.parse(localStorage.getItem("namesList"));
+     } catch(e) {
+      namesList = [];
      }
+    } else {
+     namesList = [];
+    }
 
-     if (timesList && !Array.isArray(timesList)) {
-      timesList = Object.values(timesList);
-     }
-     if (namesList && !Array.isArray(namesList)) {
-      namesList = Object.values(namesList);
-     }
+    if (timesList && !Array.isArray(timesList)) { timesList = Object.values(timesList); }
+    if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
 
-     if (timesList && !Array.isArray(timesList)) { timesList = Object.values(timesList); }
-if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
-
-if (timesList && timesList.length > 0) {
- var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
-      paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
-      timesList = paired.map(p => p.time);
-      namesList = paired.map(p => p.name);
-     }
-     if (typeof printTimes === 'function') {
-      printTimes();
-     }
+    if (timesList && timesList.length > 0) {
+     var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
+     paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
+     timesList = paired.map(p => p.time);
+     namesList = paired.map(p => p.name);
+    }
+    if (typeof printTimes === 'function') {
+     printTimes();
     }
    }
   });
