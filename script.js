@@ -137,7 +137,7 @@ function salvaDatiSincronizzati(inviaSubitoAlCloud = false) {
   namesList: namesList,
   ultimoAggiornamento: Date.now()
  };
- localStorage.setItem("datiAppCompleti", JSON.stringify(pacchetto));
+ //localStorage.setItem("datiAppCompleti", JSON.stringify(pacchetto));
  localStorage.setItem("timesList", JSON.stringify(pacchetto.timesList));
  localStorage.setItem("namesList", JSON.stringify(pacchetto.namesList));
  localStorage.setItem("ultimoAggiornamento", pacchetto.ultimoAggiornamento);
