@@ -86,6 +86,13 @@ window.onload = function() {
    namesList = JSON.parse(localStorage.getItem("namesList"));
   }
  }
+ if (timesList && !Array.isArray(timesList)) {
+  timesList = Object.values(timesList);
+ }
+ if (namesList && !Array.isArray(namesList)) {
+  namesList = Object.values(namesList);
+ }
+
  if(timesList && timesList.length > 0) {
   var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
   paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
@@ -201,6 +208,14 @@ firebase.auth().onAuthStateChanged(async (user) => {
      if (localStorage.getItem("namesList")) {
       namesList = JSON.parse(localStorage.getItem("namesList"));
      }
+
+     if (timesList && !Array.isArray(timesList)) {
+      timesList = Object.values(timesList);
+     }
+     if (namesList && !Array.isArray(namesList)) {
+      namesList = Object.values(namesList);
+     }
+
      if (timesList && timesList.length > 0) {
       var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
       paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
