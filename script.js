@@ -20,27 +20,8 @@ if(isNaN(option_number) || option_number < 0 || option_number >= button_options.
 option_number = 0;
 var defaultMethod = button_options[option_number];
 var currentSessionId = "ID_" + Math.random().toString(16).slice(2);
-var dbRef = null;
-var dateFields = [
- "insgiornouno", "insmeseuno", "insannouno",
- "insgiornodue", "insmesedue", "insannodue"
-];
 
-
-var firebaseConfig = {
- apiKey: "AIzaSyADRHmsJEpBHXHQxfJa0pRJ3FQvrAXZ1zY",
- authDomain: "dailylife-eb517.firebaseapp.com",
- databaseURL: "https://dailylife-eb517-default-rtdb.firebaseio.com",
- projectId: "dailylife-eb517",
- storageBucket: "dailylife-eb517.firebasestorage.app",
- messagingSenderId: "768028676668",
- appId: "1:768028676668:web:278ef937a95bc653a8e939",
- measurementId: "G-12JNQ59C6N"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-
+// Se il valore nel storage non è 'false' allora è true (default attivo)
 var interactionSoundEffects = localStorage.getItem('interactionSoundEffects') != 'false';
 var gamesMusic = localStorage.getItem('gamesMusic') != 'false';
 var mobileVibration = localStorage.getItem('mobileVibration') != 'false';
@@ -49,276 +30,94 @@ var mobileVibration = localStorage.getItem('mobileVibration') != 'false';
 
 
 
+// Rileva se il dispositivo è iOS o Mac
 const ua = navigator.userAgent;
 const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isMac = /Macintosh/.test(ua) && !isIOS;
 
 function applicaCorrezioniApple() {
     if (isIOS || isMac) {
-        
+        // Aggiunge la classe al body per attivare i CSS del Passo 1
         document.body.classList.add('ios-device');
         
-        
-        
+        // Correzione larghezza input data per evitare che vengano tagliati dal selettore iOS
+        // Poiché i tuoi input sono circa 30vw[cite: 136, 138], su iOS aumentiamoli leggermente
         document.querySelectorAll('input[type="date"], input[type="time"]').forEach(el => {
             el.style.minWidth = '35vw'; 
         });
     }
 }
 
-
+// Esegui la funzione appena la pagina è pronta
 document.addEventListener('DOMContentLoaded', applicaCorrezioniApple);
 
 
 
 
 window.onload = function() {
- var datiLocali = localStorage.getItem("datiAppCompleti");
- if (datiLocali) {
-  var parsed = JSON.parse(datiLocali);
-  timesList = parsed.timesList || [];
-  namesList = parsed.namesList || [];
- } else {
-  if (localStorage.getItem("timesList")) {
-   timesList = JSON.parse(localStorage.getItem("timesList"));
-  }
-  if (localStorage.getItem("namesList")) {
-   namesList = JSON.parse(localStorage.getItem("namesList"));
-  }
- }
- if (timesList && !Array.isArray(timesList)) {
-  timesList = Object.values(timesList);
- }
- if (namesList && !Array.isArray(namesList)) {
-  namesList = Object.values(namesList);
- }
 
- if (timesList && !Array.isArray(timesList)) { timesList = Object.values(timesList); }
-if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
-
-if(timesList && timesList.length > 0) {
- var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
-  paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
-  timesList = paired.map(p => p.time);
-  namesList = paired.map(p => p.name);
-  printTimes();
- }
- dateFields.forEach(id => {
-  var input = document.getElementById(id);
-  if(input) onlyNumbers(input);
- });
- autoNext(document.getElementById("insgiornouno"), document.getElementById("insmeseuno"), 2);
- autoNext(document.getElementById("insmeseuno"), document.getElementById("insannouno"), 2);
- autoNext(document.getElementById("insgiornodue"), document.getElementById("insmesedue"), 2);
- autoNext(document.getElementById("insmesedue"), document.getElementById("insannodue"), 2);
- option_number = Number(localStorage.getItem("option_number") || 0);
- if (option_number < 0 || option_number >= button_options.length || isNaN(option_number)) {
-  option_number = 0;
- }
- defaultMethod = button_options[option_number];
- writeOnDefaultButton();
- if(typeof modeArray !== 'undefined') {
-  percentageMode = modeArray[option_number];
- }
- checkClick.checked = interactionSoundEffects;
- checkSottofondo.checked = gamesMusic;
- checkVibrazione.checked = mobileVibration;
- document.addEventListener('selectstart', function(e) {
-  const allowedTags = ['INPUT', 'TEXTAREA'];
-  if (!allowedTags.includes(e.target.tagName) && !e.target.isContentEditable) {
-   e.preventDefault();
-  }
- });
-};
-
-function salvaDatiSincronizzati(inviaSubitoAlCloud = false) {
- var pacchetto = {
-  timesList: timesList,
-  namesList: namesList,
-  ultimoAggiornamento: Date.now()
- };
- //localStorage.setItem("datiAppCompleti", JSON.stringify(pacchetto));
- localStorage.setItem("timesList", JSON.stringify(pacchetto.timesList));
- localStorage.setItem("namesList", JSON.stringify(pacchetto.namesList));
- localStorage.setItem("ultimoAggiornamento", pacchetto.ultimoAggiornamento);
- if (dbRef && inviaSubitoAlCloud) {
-  dbRef.set(pacchetto);
- }
-}
-
-async function syncTotaleSuCloud() {
- if(!dbRef) return;
- var orarioAttuale = Date.now();
- localStorage.setItem('ultimoAggiornamento', orarioAttuale);
- var datiDaSalvare = {};
- for(var i=0; i<localStorage.length; i++) {
-  var k = localStorage.key(i);
-  if(!k.match(/[.#$\[\]]/))
-   datiDaSalvare[k] = localStorage.getItem(k);
- }
- datiDaSalvare['ultimoAggiornamento'] = orarioAttuale;
- try {
-  await dbRef.set(datiDaSalvare);
-  sessionStorage.setItem('ultimo_sync_time', orarioAttuale);
-  ultimoSalvataggio = orarioAttuale; 
-  if (typeof aggiornaTestoTempo === 'function') aggiornaTestoTempo();
- } catch (e) {
-  console.error("Errore sync:", e);
- }
-}
-
-var timerSalvataggio; 
-function segnaModificaE_Salva() {
- clearTimeout(timerSalvataggio);
- localStorage.setItem('ultimoAggiornamento', Date.now());
- timerSalvataggio = setTimeout(() => {
-  syncTotaleSuCloud();
- }, 5000); 
-}
-
-firebase.auth().onAuthStateChanged(async (user) => {
- var infoEmailPnl = document.getElementById('infoEmailPannello');
- var opzioniGuest = document.getElementById('opzioniGuest');
- var opzioniUser = document.getElementById('opzioniUser');
- var btnChiudi = document.getElementById('btnChiudiPannello');
- var loader = document.getElementById('loaderGlobale');
- if(user) {
-  localStorage.setItem("user_email", user.email);
-  var emailKey = user.email.replace(/\./g, ',');
-  var sessionRef = firebase.database().ref('active_sessions/' + emailKey);
-  sessionRef.set({ id: currentSessionId, time: Date.now() });
-  sessionRef.on('value', (snapshot) => {
-   var data = snapshot.val();
-   if (data && data.id !== currentSessionId) {
-    sessionRef.off();
-    bloccaAccessoMultiplo();
-   }
-  });
-  dbRef = firebase.database().ref('users/' + user.uid + '/dati');
-  dbRef.on('value', (snapshot) => {
-   var datiCloud = snapshot.val();
-   if (datiCloud) {
-    var timestampCloud = datiCloud.ultimoAggiornamento || 0;
-    localStorage.setItem("ultimoAggiornamento", timestampCloud);
-    
-    for (var chiave in datiCloud) {
-     if (chiave !== "datiAppCompleti" && chiave !== "dati" && chiave !== "datiLocali") {
-      if (typeof datiCloud[chiave] === 'object') {
-       localStorage.setItem(chiave, JSON.stringify(datiCloud[chiave]));
-      } else {
-       localStorage.setItem(chiave, datiCloud[chiave]);
-      }
-     }
-    }
-
+    // 1. CARICAMENTO CLASSIFICA MEMORY (Il tuo codice originale)
     if (localStorage.getItem("timesList")) {
-     try {
-      timesList = JSON.parse(localStorage.getItem("timesList"));
-     } catch(e) {
-      timesList = [];
-     }
-    } else {
-     timesList = [];
+        timesList = JSON.parse(localStorage.getItem("timesList"));
     }
 
     if (localStorage.getItem("namesList")) {
-     try {
-      namesList = JSON.parse(localStorage.getItem("namesList"));
-     } catch(e) {
-      namesList = [];
-     }
-    } else {
-     namesList = [];
+        namesList = JSON.parse(localStorage.getItem("namesList"));
     }
 
-    if (timesList && !Array.isArray(timesList)) { timesList = Object.values(timesList); }
-    if (namesList && !Array.isArray(namesList)) { namesList = Object.values(namesList); }
+    if(timesList && timesList.length > 0) {
+        var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
+        paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
+        timesList = paired.map(p => p.time);
+        namesList = paired.map(p => p.name);
+        printTimes();
+    }
 
-    if (timesList && timesList.length > 0) {
-     var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
-     paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
-     timesList = paired.map(p => p.time);
-     namesList = paired.map(p => p.name);
+    // 2. GESTIONE CAMPI DATA (Il tuo codice originale)
+    dateFields.forEach(id => {
+        var input = document.getElementById(id);
+        if(input) onlyNumbers(input);
+    });
+
+    autoNext(document.getElementById("insgiornouno"), document.getElementById("insmeseuno"), 2);
+    autoNext(document.getElementById("insmeseuno"), document.getElementById("insannouno"), 2);
+    autoNext(document.getElementById("insgiornodue"), document.getElementById("insmesedue"), 2);
+    autoNext(document.getElementById("insmesedue"), document.getElementById("insannodue"), 2);
+
+    // 3. OPZIONI E METODO DI DEFAULT (Il tuo codice originale)
+    option_number = Number(localStorage.getItem("option_number") || 0);
+
+    if (option_number < 0 || option_number >= button_options.length || isNaN(option_number)) {
+        option_number = 0;
     }
-    if (typeof printTimes === 'function') {
-     printTimes();
+
+    defaultMethod = button_options[option_number];
+    writeOnDefaultButton();
+    
+    // Controlla che modeArray esista per evitare errori
+    if(typeof modeArray !== 'undefined') {
+        percentageMode = modeArray[option_number];
     }
-   }
-  });
-  aggiornaAvatar(user.email);
-  if(infoEmailPnl) infoEmailPnl.innerText = user.email;
-  if(opzioniGuest) opzioniGuest.style.display = 'none';
-  if(opzioniUser) opzioniUser.style.display = 'block';
-  if(btnChiudi) btnChiudi.style.display = 'block';
-  if(loader) loader.style.display = 'none';
- }
+ 
+
+ checkClick.checked = interactionSoundEffects;
+ checkSottofondo.checked = gamesMusic;
+ checkVibrazione.checked = mobileVibration;
+
+
+
+document.addEventListener('selectstart', function(e) {
+    // Lista di tag dove la selezione è permessa
+    const allowedTags = ['INPUT', 'TEXTAREA'];
+    
+    // Se l'elemento cliccato non è tra quelli permessi, blocca la selezione
+    if (!allowedTags.includes(e.target.tagName) && !e.target.isContentEditable) {
+        e.preventDefault();
+    }
 });
 
-function ottieniPacchettoDati() {
- return {
-  timesList: timesList,
-  namesList: namesList,
-  ultimoAggiornamento: Date.now()
- };
-}
 
-async function logoutSicuro() {
- const loader = document.getElementById('loaderGlobale');
- if (loader) loader.style.display = 'flex';
- try {
-  if (typeof dbRef !== 'undefined' && dbRef) {
-   await Promise.race([
-    syncTotaleSuCloud(),
-    new Promise(resolve => setTimeout(resolve, 2000))
-   ]);
-  }
-  await firebase.auth().signOut();
-  localStorage.clear();
- } catch (error) {
-  console.error("Errore durante il logout:", error);
-  localStorage.clear();
- }
-}
-
-function aggiornaAvatar(email) {
- if(!email) return;
- var iniziale = email.charAt(0).toUpperCase();
- var elementoIniziale = document.getElementById('inizialeAvatar');
- var bottone = document.getElementById('simboloEmail');
- var colori = {
-  'A': '#F44336', 'B': '#E91E63', 'C': '#9C27B0', 'D': '#673AB7',
-  'E': '#3F51B5', 'F': '#2196F3', 'G': '#03A9F4', 'H': '#00BCD4',
-  'I': '#009688', 'J': '#4CAF50', 'K': '#8BC34A', 'L': '#CDDC39',
-  'M': '#FFEB3B', 'N': '#FFC107', 'O': '#FF9800', 'P': '#FF5722',
-  'Q': '#795548', 'R': '#9E9E9E', 'S': '#607D8B', 'T': '#000000',
-  'U': '#888888', 'V': '#555555', 'W': '#333333', 'X': '#222222',
-  'Y': '#111111', 'Z': '#444444'
- };
- if(elementoIniziale) elementoIniziale.innerText = iniziale;
- if(bottone) {
-  bottone.innerText = iniziale;
-  bottone.style.backgroundColor = colori[iniziale] || '#757575';
-  bottone.style.color = '#FFFFFF';
- }
-}
-
-
-
-
-
-function salvaDatiSincronizzati() {
- var pacchetto = {
-  timesList: timesList,
-  namesList: namesList,
-  ultimoAggiornamento: Date.now()
- };
- //localStorage.setItem("datiAppCompleti", JSON.stringify(pacchetto));
- localStorage.setItem("timesList", JSON.stringify(pacchetto.timesList));
- localStorage.setItem("namesList", JSON.stringify(pacchetto.namesList));
- if (dbRef) {
-  dbRef.set(pacchetto);
- }
-}
+};
 
 
 function inviaNotificaAttivitaUtente(tipoEvento, emailDestinatario) {
@@ -826,7 +625,7 @@ function showCalc()
 function showOnly(...daMostrare) {
   var figli = containercalc.querySelectorAll('div');
   figli.forEach(div => {
-    
+    // mostra solo quelli specificati
     div.style.display = daMostrare.includes(div) ? 'block' : 'none';
   });
 }
@@ -2144,7 +1943,7 @@ function salvaAttivita()
 {
  var container = document.getElementById('container3');
  var attivita = [];
- var rows = container.children; 
+ var rows = container.children; // ora ogni "riga" è un div
  for (var i=0;i<rows.length;i++)
  {
   var row = rows[i];
@@ -2250,33 +2049,33 @@ function salvaNote() {
     for (var i = 0; i < children.length; i++) {
         var el = children[i];
         
-        
+        // 1. Identifica il blocco note principale (il bottone arancione)
         if (el.tagName == 'BUTTON' && el.classList.contains('save')) {
             var id = el.dataset.id;
             var titoloPrincipale = el.textContent;
-            var table = el.nextElementSibling; 
+            var table = el.nextElementSibling; // La tabella che segue il bottone
             var righeCapitoli = [];
 
-            
+            // 2. Se esiste la tabella, entriamo a leggere i capitoli
             if (table && table.tagName == 'TABLE') {
                 var rows = table.rows;
                 for (var r = 0; r < rows.length; r++) {
                     var row = rows[r];
 
-                    
+                    // Cerchiamo gli elementi usando le classi che abbiamo aggiunto
                     var titleDiv = row.querySelector('.chapter-title'); 
                     var textarea = row.querySelector('textarea.save');
 
                     if (titleDiv && textarea) {
                         righeCapitoli.push({
-                            titolo: titleDiv.textContent, 
-                            contenuto: textarea.value     
+                            titolo: titleDiv.textContent, // Prende "Capitolo 1" ecc.
+                            contenuto: textarea.value     // Prende il testo scritto
                         });
                     }
                 }
             }
 
-            
+            // 3. Spingiamo l'intero blocco nell'array da salvare
             blocks.push({
                 id: id,
                 titolo: titoloPrincipale,
@@ -2285,23 +2084,25 @@ function salvaNote() {
         }
     }
     
-    
+    // 4. Salva tutto nel localStorage
     localStorage.setItem('noteData', JSON.stringify(blocks));
 }
 function caricaNote() {
     var salvate = localStorage.getItem('noteData');
     if (!salvate) return;
 
-    
+    // Traduciamo la stringa in un array di oggetti
     var blocks = JSON.parse(salvate).reverse();
     var container = document.getElementById('container5');
-    container.innerHTML = ''; 
+    container.innerHTML = ''; // Puliamo il contenitore prima di ricaricare
 
     blocks.forEach(blocco => {
-        
+        // 1. Creiamo il blocco principale (il bottone arancione)
+        // Passiamo blocco.capitoli per far generare le righe internamente
         addNotes(blocco.titolo, blocco.capitoli || [], blocco.id);
         
-        
+        // 2. Dopo addNotes, dobbiamo assicurarci che i dati siano visualizzati
+        // ma addNotes chiama già createRow(capitolo.titolo) internamente se passi l'array.
     });
 }
 var loading = true;
@@ -2912,7 +2713,7 @@ function addDaily(titolo = 'Titolo', attivita = [], id = null)
    isLongPress = true;
    sfondoopaco.style.display = 'block';
    document.body.style.overflow = '';
-   
+   // Mostra il div di conferma eliminazione
 var confirmDiv = document.createElement('div');
 confirmDiv.id = 'confermaelimina_dynamic';
 confirmDiv.style.position = 'fixed';
@@ -2926,7 +2727,7 @@ confirmDiv.style.color = 'black';
 confirmDiv.style.borderRadius = '3vw';
 confirmDiv.style.zIndex = 10000;
 
-
+// Bottone chiudi ❌
 var closeBtn = document.createElement('input');
 closeBtn.type = 'button';
 closeBtn.value = '❌';
@@ -2945,7 +2746,7 @@ closeBtn.onclick = () => {
 };
 confirmDiv.appendChild(closeBtn);
 
-
+// Testo centrale
 var p = document.createElement('p');
 p.textContent = 'Vuoi eliminare questi appunti?';
 p.style.position = 'absolute';
@@ -2956,7 +2757,7 @@ p.style.fontWeight = 'bold';
 p.style.textAlign = 'center';
 confirmDiv.appendChild(p);
 
-
+// Bottone ANNULLA
 var cancelBtn = document.createElement('input');
 cancelBtn.type = 'button';
 cancelBtn.value = 'ANNULLA';
@@ -2977,7 +2778,7 @@ cancelBtn.onclick = () => {
 };
 confirmDiv.appendChild(cancelBtn);
 
-
+// Bottone CONFERMA
 var confirmBtn = document.createElement('input');
 confirmBtn.type = 'button';
 confirmBtn.value = 'CONFERMA';
@@ -3002,7 +2803,7 @@ confirmBtn.onclick = () => {
 };
 confirmDiv.appendChild(confirmBtn);
 
-
+// Aggiungi il div al body
 document.body.appendChild(confirmDiv);
 sfondoopaco.style.display = 'block';
 
@@ -3230,7 +3031,7 @@ function addNotes(titolo = 'Titolo', attivita = [], id = null) {
   titleBtn.textContent = titolo;
   titleBtn.classList.add('save');
 
-
+  // Stili del titolo
   titleBtn.style.minWidth = '30vw';
   titleBtn.style.width = 'auto';
   titleBtn.style.whiteSpace = 'nowrap';
@@ -3262,10 +3063,12 @@ function addNotes(titolo = 'Titolo', attivita = [], id = null) {
     pressTimer = setTimeout(() => {
   isLongPress = true;
  
-
+  // Mostra sfondo e finestra di conferma
   sfondoopaco.style.display = 'block';
   document.body.style.overflow = 'hidden';
+  // Mostra il div di conferma eliminazione
 
+// 1. Creazione dell'OVERLAY (il velo che copre tutto lo schermo)
 var overlay = document.createElement('div');
 overlay.id = 'dynamic_overlay_container';
 overlay.style.position = 'fixed';
@@ -3274,14 +3077,15 @@ overlay.style.left = '0';
 overlay.style.width = '100vw';
 overlay.style.height = '100vh';
 overlay.style.zIndex = '10000';
-overlay.style.display = 'flex';
-overlay.style.alignItems = 'center';
-overlay.style.justifyContent = 'center';
-overlay.style.backgroundColor = 'rgba(0,0,0,0.1)';
+overlay.style.display = 'flex';          // Fondamentale per centrare
+overlay.style.alignItems = 'center';     // Centra verticalmente
+overlay.style.justifyContent = 'center'; // Centra orizzontalmente
+overlay.style.backgroundColor = 'rgba(0,0,0,0.1)'; // Opzionale: un leggero oscuramento
 
+// 2. Il BOX della Modale
 var confirmDiv = document.createElement('div');
 confirmDiv.id = 'confermaeliminacontenuto';
-confirmDiv.style.position = 'relative';
+confirmDiv.style.position = 'relative';  // Relative serve solo come riferimento per la X
 confirmDiv.style.width = '85vw';
 confirmDiv.style.padding = '6vw';
 confirmDiv.style.backgroundColor = '#ffffff';
@@ -3291,7 +3095,7 @@ confirmDiv.style.fontFamily = 'sans-serif';
 confirmDiv.style.textAlign = 'center';
 confirmDiv.style.boxSizing = 'border-box';
 
-
+// 3. Bottone di chiusura (X)
 var closeBtn = document.createElement('input');
 closeBtn.type = 'button';
 closeBtn.value = '✕';
@@ -3313,22 +3117,22 @@ closeBtn.onclick = () => {
     if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
 
-
+// 4. Messaggio di testo
 var p = document.createElement('p');
 p.innerHTML = 'Cancellare definitivamente<br>questo contenuto?';
 p.style.fontSize = '5.5vw';
 p.style.lineHeight = '1.4';
 p.style.fontWeight = '600';
-p.style.margin = '4vw 0 8vw 0';
+p.style.margin = '4vw 0 8vw 0'; // Margini corretti
 p.style.color = '#222';
 
-
+// 5. Contenitore dei bottoni
 var btnContainer = document.createElement('div');
 btnContainer.style.display = 'flex';
 btnContainer.style.justifyContent = 'space-between';
 btnContainer.style.gap = '4vw';
 
-
+// 6. Bottone ANNULLA
 var cancelBtn = document.createElement('input');
 cancelBtn.type = 'button';
 cancelBtn.value = 'ANNULLA';
@@ -3346,7 +3150,7 @@ cancelBtn.onclick = () => {
     if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
 
-
+// 7. Bottone CONFERMA (con la tua logica)
 var confirmBtn = document.createElement('input');
 confirmBtn.type = 'button';
 confirmBtn.value = 'CONFERMA';
@@ -3360,7 +3164,7 @@ confirmBtn.style.border = 'none';
 confirmBtn.style.borderRadius = '3vw';
 confirmBtn.style.boxShadow = '0 1vw 3vw rgba(255, 77, 77, 0.3)';
 confirmBtn.onclick = () => {
-
+    // TUA LOGICA ORIGINALE
     var table = titleBtn.nextElementSibling;
     if (table && table.tagName == 'TABLE') table.remove();
     titleBtn.remove();
@@ -3371,7 +3175,7 @@ confirmBtn.onclick = () => {
     if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'none';
 };
 
-
+// Assemblaggio
 btnContainer.appendChild(cancelBtn);
 btnContainer.appendChild(confirmBtn);
 confirmDiv.appendChild(closeBtn);
@@ -3379,10 +3183,10 @@ confirmDiv.appendChild(p);
 confirmDiv.appendChild(btnContainer);
 overlay.appendChild(confirmDiv);
 
-
+// Aggiunta al body
 document.body.appendChild(overlay);
 
-
+// Mostra lo sfondo opaco se esiste
 if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'block';
 
   }, 700);
@@ -3457,7 +3261,7 @@ if(typeof sfondoopaco !== 'undefined') sfondoopaco.style.display = 'block';
   }, { passive: false });
   titleBtn.addEventListener('touchcancel', clearTimers);
 
-
+  // == Tabella ==
   var table;
 
   function createTable() {
@@ -3512,9 +3316,9 @@ function createRow(titolo = 'Capitolo') {
     titleDiv.style.fontSize = '4vw';
     titleDiv.style.marginBottom = '0.5vw';
     titleDiv.style.userSelect = 'none';
-    titleDiv.style.whiteSpace = 'nowrap';
-titleDiv.style.overflow = 'hidden';
-titleDiv.style.textOverflow = 'ellipsis';
+    titleDiv.style.whiteSpace = 'nowrap';        // mai a capo
+titleDiv.style.overflow = 'hidden';          // nasconde l’eccesso
+titleDiv.style.textOverflow = 'ellipsis';    // ...
 titleDiv.style.maxWidth = '60%';
    
  
@@ -3534,7 +3338,7 @@ titleDiv.style.maxWidth = '60%';
 
     input.addEventListener('input', (e) => {
   if (input.value.length > 25) {
-    input.value = input.value.slice(0, 25);
+    input.value = input.value.slice(0, 25); // massimo 25 caratteri
   }
 });
 
@@ -3566,8 +3370,8 @@ document.addEventListener('click', (e) => {
 var topRightBtn1 = document.createElement('button');
 topRightBtn1.textContent = '⚙️';
 topRightBtn1.style.position = 'absolute';
-topRightBtn1.style.top = '0vw';
-topRightBtn1.style.right = '8.5vw';
+topRightBtn1.style.top = '0vw';       // distanza dal top del wrapper
+topRightBtn1.style.right = '8.5vw';     // distanza da destra
 topRightBtn1.style.fontSize = '4vw';
 topRightBtn1.style.border = 'none';
 topRightBtn1.style.borderRadius = '1vw';
@@ -3575,20 +3379,20 @@ topRightBtn1.style.cursor = 'pointer';
 topRightBtn1.style.zIndex = '10';
 topRightBtn1.title = 'Azione_personalizzata';
 
-
+// Aggiungi listener per il click
 topRightBtn1.addEventListener('click', () => {
-  activeTextarea = textarea;
-  resetParameters();
+  activeTextarea = textarea;           // ⭐ PASSO CHIAVE
+  resetParameters();                   // resetta i checkbox
   showModeParameters(titleDiv.textContent);
 });
 
-
+// Aggiungi al wrapper
 wrapper.appendChild(topRightBtn1);
 var topRightBtn2 = document.createElement('button');
 topRightBtn2.textContent = 'ℹ️';
 topRightBtn2.style.position = 'absolute';
-topRightBtn2.style.top = '0vw';
-topRightBtn2.style.right = '2vw';
+topRightBtn2.style.top = '0vw';       // distanza dal top del wrapper
+topRightBtn2.style.right = '2vw';     // distanza da destra
 topRightBtn2.style.fontSize = '4vw';
 topRightBtn2.style.border = 'none';
 topRightBtn2.style.borderRadius = '1vw';
@@ -3596,12 +3400,12 @@ topRightBtn2.style.cursor = 'pointer';
 topRightBtn2.style.zIndex = '10';
 topRightBtn2.title = 'caratteristiche';
 
-
+// Aggiungi listener per il click
 topRightBtn2.addEventListener('click', () => {
   showTextParameters(textarea.value,titleDiv.textContent);
 });
 
-
+// Aggiungi al wrapper
 wrapper.appendChild(topRightBtn2);
 
 
@@ -3614,27 +3418,27 @@ textarea.style.fontSize = '4vw';
 textarea.style.fontFamily = 'inherit';
 textarea.style.borderRadius = '2vw';
 textarea.style.resize = 'none';
-textarea.style.overflowY = 'hidden';
+textarea.style.overflowY = 'hidden'; // evita la scrollbar
 textarea.rows = 1;
 
-
+// Funzione per adattare l'altezza
 function autoResize() {
   textarea.style.height = 'auto';
   textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-
+// Allunga dinamicamente durante la scrittura
 textarea.addEventListener('input', () => {
   autoResize();
   salvaNote();
 });
 
-
+// Quando perdi il focus, resetta a minHeight
 textarea.addEventListener('blur', () => {
   textarea.style.height = '';
 });
 
-
+// Inizializza la dimensione corretta all'inizio (utile per caricamenti)
 setTimeout(autoResize, 0);
 textarea.addEventListener('focus', autoResize);
 
@@ -3824,12 +3628,12 @@ textarea.addEventListener('focus', autoResize);
   charBtn.style.borderRadius = '0.5vw';
   charBtn.style.userSelect = 'none';
   charBtn.style.fontSize = '5vw';
-  charBtn.style.position = 'relative';
+  charBtn.style.position = 'relative'; // per posizionare la V
 
   var pressTimer = null;
   var longPress = false;
 
-
+  // Funzione per mostrare la V
   function showCheckmark() {
     var vDiv = document.createElement('div');
     vDiv.textContent = '✔';
@@ -3867,7 +3671,7 @@ textarea.addEventListener('focus', autoResize);
     clearTimeout(pressTimer);
   }
 
-
+  // Eventi per mouse
   charBtn.addEventListener('contextmenu', (e) => {
   e.preventDefault();
 });
@@ -3880,7 +3684,7 @@ textarea.addEventListener('focus', autoResize);
   });
   charBtn.addEventListener('mouseleave', cancelPress);
 
-
+  // Eventi per touch
  charBtn.addEventListener('touchstart', () => {
   startPress();
 });
@@ -3909,7 +3713,7 @@ textarea.addEventListener('focus', autoResize);
 });
   }
 
-
+  // == Filtro dei caratteri
   btnAll.addEventListener('click', () => {
   renderCharMap('tutti');
   btnAll.style.backgroundColor = '#ccc';
@@ -3933,27 +3737,29 @@ btnScience.addEventListener('click', () => {
 
   wrapper.appendChild(charMapDiv);
 
-
+  // == AL CLICK: Mostra mappa + carica caratteri “tutti”
   charMapBtn.addEventListener('click', () => {
   var shouldShow = (charMapDiv.style.display == 'none');
   charMapDiv.style.display = shouldShow ? 'block' : 'none';
 
   if (shouldShow) {
-    renderCharMap('tutti');
+    renderCharMap('tutti'); // Mostra i caratteri "Tutti"
 
-
-    btnAll.style.backgroundColor = '#ccc';
-    btnvarters.style.backgroundColor = 'white';
-    btnScience.style.backgroundColor = 'white';
+    // Evidenzia il pulsante "Tutti" e resetta gli altri
+    btnAll.style.backgroundColor = '#ccc';       // attivo
+    btnvarters.style.backgroundColor = 'white';  // inattivo
+    btnScience.style.backgroundColor = 'white';  // inattivo
   }
 });
 
   cell.appendChild(wrapper);
-  row.appendChild(cell);
-  row.appendChild(cellMinus);
+  row.appendChild(cell);      // Textarea a sinistra
+  row.appendChild(cellMinus); // Bottone "-" al centro
   row.appendChild(cellPlus);
 
-
+  // ... (resto dei bottoni + e - come prima)
+  
+  // (Codice per - e + uguale a prima)
   
   return row;
 }
@@ -3963,38 +3769,38 @@ function updatePlusButtonsForTable(targetTable) {
     if (!targetTable) return;
     var rows = targetTable.rows;
     for (var i = 0; i < rows.length; i++) {
-
+        // Cerchiamo il bottone + nella terza cella (indice 2)
         var plusBtn = rows[i].cells[2]?.querySelector('button');
         if (plusBtn) {
-
+            // Se è l'ultima riga lo mostra, altrimenti lo nasconde
             plusBtn.style.display = (i == rows.length - 1) ? 'inline-block' : 'none';
         }
     }
 }
 
-
+  // Se ci sono attività salvate
   if (attivita.length > 0) {
     createTable(); 
-
+    // Recuperiamo la tabella appena creata
     var currentTable = titleBtn.nextElementSibling; 
     currentTable.style.display = 'none';
 
-
+    // Svuotiamo la tabella dalla riga vuota iniziale (CORRETTO: deleteRow)
     while (currentTable.rows.length > 0) {
       currentTable.deleteRow(0);
     }
 
-
+    // Inseriamo i capitoli salvati
     attivita.forEach(capitolo => {
       var row = createRow(capitolo.titolo);
-      var textarea = row.querySelector('textarea.save');
+      var textarea = row.querySelector('textarea.save'); // Usa la classe .save
       if (textarea) {
         textarea.value = capitolo.contenuto || '';
       }
       currentTable.appendChild(row);
     });
 
-
+    // Aggiorniamo i bottoni + e - per questa specifica tabella
     updatePlusButtonsForTable(currentTable);
   }
 }
@@ -4003,61 +3809,61 @@ function updatePlusButtonsForTable(targetTable) {
 function cleanAllNotes() {
   var container = document.getElementById('container5');
 
-
+  // Controllo se il contenitore è vuoto
   if (container.children.length == 0) {
     divvuoto.style.display = 'block';
     setTimeout(() => { divvuoto.style.display = 'none'; }, 3000);
     return;
   }
 
-
+  // OVERLAY (Sfondo scuro)
   var overlay = document.createElement('div');
   overlay.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; display: flex; align-items: center; justify-content: center; backgroundColor: rgba(0,0,0,0.4); z-index: 10000;";
   document.body.style.overflow = "hidden";
   sfondoopaco2.style.display = 'block';
 
-
+  // POPUP (Contenitore principale)
   var confirmDiv = document.createElement('div');
   confirmDiv.id = 'confermapuliscipagina';
   confirmDiv.style.cssText = "position: relative; width: 85vw; padding: 6vw; background-color: #ffffff; color: #333; border-radius: 6vw; box-shadow: 0 4vw 10vw rgba(0,0,0,0.3); z-index: 10001; font-family: sans-serif; text-align: center; box-sizing: border-box;";
 
-
+  // Bottone chiudi ✕ (Rosso Professionale)
   var closeBtn = document.createElement('input');
   closeBtn.type = 'button';
   closeBtn.value = '✕';
   closeBtn.style.cssText = "position: absolute; top: 3vw; right: 3vw; width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; background-color: #fff5f5; border: none; border-radius: 50%; font-size: 4vw; font-weight: bold; color: #ff4d4d; cursor: pointer; box-shadow: 0 0.5vw 1.5vw rgba(255, 77, 77, 0.15); -webkit-tap-highlight-color: transparent;";
   closeBtn.onclick = () => { overlay.remove(); document.body.style.overflow = ""; sfondoopaco2.style.display = 'none'; };
 
-
+  // Testo del messaggio
   var p = document.createElement('p');
   p.innerHTML = 'Vuoi cancellare i<br>contenuti di questa pagina?';
   p.style.cssText = "font-size: 5.5vw; line-height: 1.4; font-weight: 600; margin-top: 4vw; margin-bottom: 8vw; color: #222;";
 
-
+  // Contenitore Flex per i bottoni
   var btnContainer = document.createElement('div');
   btnContainer.style.cssText = "display: flex; justify-content: space-between; gap: 4vw;";
 
-
+  // Bottone ANNULLA
   var cancelBtn = document.createElement('input');
   cancelBtn.type = 'button';
   cancelBtn.value = 'ANNULLA';
   cancelBtn.style.cssText = "flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #f0f0f0; color: #555; border: none; border-radius: 3vw; cursor: pointer;";
   cancelBtn.onclick = () => { overlay.remove(); document.body.style.overflow = ""; sfondoopaco2.style.display = 'none'; };
 
-
+  // Bottone CONFERMA (Rosso)
   var confirmBtn = document.createElement('input');
   confirmBtn.type = 'button';
   confirmBtn.value = 'CONFERMA';
   confirmBtn.style.cssText = "flex: 1; height: 12vw; font-size: 4vw; font-weight: bold; background-color: #ff4d4d; color: white; border: none; border-radius: 3vw; cursor: pointer; box-shadow: 0 1vw 3vw rgba(255, 77, 77, 0.3);";
   confirmBtn.onclick = () => {
     container.innerHTML = '';
-    if (typeof salvaNote === "function") salvaNote();
+    if (typeof salvaNote === "function") salvaNote(); // Esegue salvataggio se esiste la funzione
     overlay.remove();
     document.body.style.overflow = "";
     sfondoopaco2.style.display = 'none';
   };
 
-
+  // Assemblaggio
   btnContainer.appendChild(cancelBtn);
   btnContainer.appendChild(confirmBtn);
   confirmDiv.appendChild(closeBtn);
@@ -4109,7 +3915,7 @@ function aggiungiCapitoloACartella() {
   var container = document.getElementById('container5');
   var cartelle = container.querySelectorAll('button.save');
 
-
+  // Trova il bottone della cartella
   var cartellaBtn = Array.from(cartelle).find(btn => btn.textContent == titoloCartella);
 
   if (!cartellaBtn) {
@@ -4119,26 +3925,26 @@ function aggiungiCapitoloACartella() {
   pressTimer = setTimeout(() => {
     isLongPress = true;
 
-
+    // Mostra sfondo e finestra di conferma
    
 
-
-
+    // Qui potresti anche far comparire un messaggio o una finestra modale
+    // ad esempio: confermaelimina.style.display = 'block';
 cartellanontrovata.style.display = 'none';
  sfondoopaco2.style.display = 'none';
   }, 3000);
  
-  return;
+  return; // <-- questo ora è corretto: esce dalla funzione se la cartella non è trovata
 }
 
-
+  // Recupera la tabella associata (se non c'è, simula il click sul bottone per crearla)
   var table = cartellaBtn.nextElementSibling;
   if (!table || table.tagName !== 'TABLE') {
     cartellaBtn.click();
     table = cartellaBtn.nextElementSibling;
   }
 
-
+  // Funzione createRow identica a quella dentro addNotes ma semplificata per estrarre textarea
   function createRow(titolo = 'Capitolo') {
     var row = document.createElement('tr');
     row.style.border = '0.1vw solid black';
@@ -4273,7 +4079,7 @@ cartellanontrovata.style.display = 'none';
   var newRow = createRow(titoloCapitolo);
   table.appendChild(newRow);
 
-
+  // Inserisci il testo nella textarea appena creata
   var textarea = newRow.cells[0].querySelector('textarea');
   textarea.value = contenutoAppunti;
 
@@ -4356,23 +4162,23 @@ function caricaDocumenti() {
     docs.forEach(doc => {
       showTitleForDocument(doc.titolo, doc.id);
 
-
+      // Dopo la creazione, aggiorniamo lo stato della stellina e contenuto
       var btn = document.querySelector(`button[data-id="${doc.id}"]`);
       if (!btn) return;
 
-
+      // Set preferito (stellina)
       var starBtn = btn.querySelector('button');
       if (starBtn && doc.preferito) {
         starBtn.style.color = 'yellow';
       }
 
-
+      // Set data
       var dateSpan = btn.querySelector('span');
       if (dateSpan) {
         dateSpan.textContent = doc.data || new Date().toLocaleDateString();
       }
 
-
+      // Set contenuto dell’editor se già esiste
       var editor = document.getElementById('editor-' + doc.id);
       if (editor) {
         var editable = editor.querySelector('.editable-area');
@@ -4478,7 +4284,12 @@ dati.reverse().forEach(valore => {
   dataCompito.setHours(0,0,0,0);
 
 
-
+/*
+  if (dataCompito < oggi) {
+    riga.style.opacity = "0.5";
+    riga.style.textDecoration = "line-through";
+  }
+*/
 
 });
  var promemoriaJSON = localStorage.getItem('promemoriaSalvati');
@@ -4566,8 +4377,8 @@ function abilitaBottone(btn, bgColor) {
     btn.disabled = false;
     btn.style.background = bgColor;
     btn.style.color = 'black';
-    btn.style.border = '0.05vw solid #555';
-    btn.style.boxShadow = '0 0.2vw 0.4vw rgba(0,0,0,0.3)';
+    btn.style.border = '0.05vw solid #555';                 // border in vw
+    btn.style.boxShadow = '0 0.2vw 0.4vw rgba(0,0,0,0.3)'; // box-shadow in vw
     btn.style.cursor = 'pointer';
 }
 
@@ -4575,8 +4386,8 @@ function disabilitaBottone(btn) {
     btn.disabled = true;
     btn.style.background = 'linear-gradient(to bottom, #e0e0e0, #cfcfcf)';
     btn.style.color = '#888';
-    btn.style.border = '0.05vw solid #bbb';
-    btn.style.boxShadow = 'inset 0 0.2vw 0.4vw rgba(255,255,255,0.8)';
+    btn.style.border = '0.05vw solid #bbb';                 // border in vw
+    btn.style.boxShadow = 'inset 0 0.2vw 0.4vw rgba(255,255,255,0.8)'; // box-shadow in vw
     btn.style.cursor = 'not-allowed';
 }
 
@@ -4938,7 +4749,7 @@ function startMastermind()
   button.style.borderRadius = '50%';
   button.style.margin = '0.5vw';
   button.style.border = "0.1vw solid black";
-  button.style.background = "#ddd";
+  button.style.background = "#ddd"; // colore neutro iniziale
   button.style.boxShadow = `
   inset 0 0 1vw rgba(255,255,255,0.5),
   inset 0 -0.5vw 1vw rgba(0,0,0,0.2),
@@ -4966,7 +4777,7 @@ function startMastermind()
  inviaBtn.disabled = true;
  inviaBtn.style.opacity = "0.4";
  inviaBtn.addEventListener("click", function() {
-  btns = riga.querySelectorAll(".color-btn");
+  btns = riga.querySelectorAll(".color-btn"); // bottoni di questa riga
   userColors = [
    btns[0].dataset.realcolor,
    btns[1].dataset.realcolor,
@@ -5082,7 +4893,7 @@ function checkRowCompvare(row)
 {
  var buttons,allFilled,inviaBtn;
  buttons = row.querySelectorAll(".color-btn");
- allFilled = Array.from(buttons).every(btn => btn.dataset.realcolor);
+ allFilled = Array.from(buttons).every(btn => btn.dataset.realcolor); // tutti hanno colore
  inviaBtn = row.querySelector("button[id^='invia']");
  if(inviaBtn)
  {
@@ -5131,37 +4942,37 @@ function startMemory()
     timerDiv.textContent = '0:00';
     memory.parentElement.appendChild(timerDiv);
 
-
+    // Memorizziamo il momento esatto in cui il gioco inizia
 var memoryStartTime = Date.now(); 
 
 timerInterval = setInterval(function () {
-
+    // Calcoliamo quanto tempo è passato dall'inizio a "ora"
     var now = Date.now();
     var diff = now - memoryStartTime; 
 
-
+    // Convertiamo i millisecondi totali in Minuti, Secondi e Millisecondi
     var minutes = Math.floor(diff / 60000);
     var seconds = Math.floor((diff % 60000) / 1000);
     var milliseconds = diff % 1000;
 
-
+    // Aggiorniamo la grafica
     timerDiv.textContent =
         minutes + ":" +
         (seconds < 10 ? "0" + seconds : seconds) + ":" +
         (milliseconds < 100 ? "0" : "") + (milliseconds < 10 ? "0" : "") + milliseconds;
 
-}, 10);
+}, 10); // L'intervallo di 10ms ora serve solo a rendere fluida la grafica
  for(i=0;i<symbols.length;i++)
  {
-  values.push(symbols[i], symbols[i]);
+  values.push(symbols[i], symbols[i]); // ogni simbolo due volte
  }
  for(i=values.length - 1;i>0;i--)
  {
   j = Math.floor(Math.random() * (i + 1));
   [values[i], values[j]] = [values[j], values[i]];
  }
- flippedCards = [];
- busy = false;
+ flippedCards = []; // carte girate temporaneamente
+ busy = false;      // blocco temporaneo per evitare click durante il timeout
  for(i_mem=0;i_mem<16;i_mem++)
  {
   card = document.createElement('div');
@@ -5204,11 +5015,11 @@ timerInterval = setInterval(function () {
   back.style.borderRadius = "2vw";
   back.style.background = `
    repeating-linear-gradient(
-    45deg,           
-    #cccccc,         
-    #cccccc 1px,     
-    #e0e0e0 1px,     
-    #e6e6e6 10px     
+    45deg,           /* angolo del pattern */
+    #cccccc,         /* colore della linea */
+    #cccccc 1px,     /* spessore linea */
+    #e0e0e0 1px,     /* spazio tra linee */
+    #e6e6e6 10px     /* altezza ripetizione */
    )
   `;
   watermark = document.createElement('div');
@@ -5217,9 +5028,9 @@ timerInterval = setInterval(function () {
   watermark.style.left = "50%";
   watermark.style.transform = "translate(-50%, -50%)";
   watermark.style.textAlign = "center";
-  watermark.style.pointerEvents = "none";
-  watermark.style.opacity = "0.1";
-  watermark.style.color = "#333333";
+  watermark.style.pointerEvents = "none"; // non interferisce con click
+  watermark.style.opacity = "0.1"; // leggera trasparenza
+  watermark.style.color = "#333333"; // più chiaro o più scuro a piacere
   watermark.style.userSelect = "none";
   watermark.innerHTML = `<div style="font-size: 5vw; font-weight: bold">Daily</div>
                          <div style="font-size: 4vw; font-weight: bold; font-style: italic; margin-left: 3vw">Life</div>`;
@@ -5242,7 +5053,7 @@ timerInterval = setInterval(function () {
      flippedCards[0].children[0].style.backgroundColor = "#90ee90";
      flippedCards[1].children[0].style.backgroundColor = "#90ee90";
      flippedCards = [];
-     matchedCount++;
+     matchedCount++; // aumenta il conteggio delle coppie trovate
      if(matchedCount == symbols.length)
      {
       sfondoopaco3.style.display = 'block';
@@ -5255,12 +5066,12 @@ timerInterval = setInterval(function () {
     }
     else
     {
-     busy = true;
+     busy = true; // blocca altri click
      setTimeout(() => {
       flippedCards[0].style.transform = "rotateY(0deg)";
       flippedCards[1].style.transform = "rotateY(0deg)";
       flippedCards = [];
-      busy = false;
+      busy = false; // sblocca click
      }, 600);
     }
    }
@@ -5268,7 +5079,7 @@ timerInterval = setInterval(function () {
   memory.appendChild(card);
  }
 }
-var timesList = [];
+var timesList = []; // array per salvare i tempi in formato stringa "m:s:ms"
 var namesList = [];
 
 function timeToMs(t) {
@@ -5287,12 +5098,12 @@ function msToTime(ms) {
 function writeTimes(n) {
     var timesDiv = document.getElementById('times');
 
-    var nMs = timeToMs(n);
+    var nMs = timeToMs(n); // converti il nuovo tempo in ms
 
     if (nomememory.value == '')
         nomememory.value = 'Anonimo';
 
-
+    // ✅ Aggiorna i due array
     if (timesList.length < 5) {
         namesList.push(nomememory.value);
         timesList.push(n);
@@ -5306,39 +5117,39 @@ function writeTimes(n) {
         }
     }
 
-
+    // ✅ Ordina insieme tempi e nomi
     var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
     paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
 
-
+    // aggiorna gli array originali ordinati
     timesList = paired.map(p => p.time);
     namesList = paired.map(p => p.name);
 
-
+    // ✅ Aggiorna il div
     timesDiv.innerHTML = "<p style='font-size:5vw; margin:2vw 0; text-align:center;'>I MIGLIORI TEMPI</p>";
 
     paired.forEach(p => {
     var row = document.createElement("div");
     row.style.display = "flex";
     row.style.alignItems = "center";
-    row.style.margin = "1vw auto";
-    row.style.width = "50vw";
-    row.style.gap = "2vw";
+    row.style.margin = "1vw auto";   // centra il blocco nel contenitore
+    row.style.width = "50vw";        // larghezza totale del blocco (nome + tempo)
+    row.style.gap = "2vw";           // distanza tra nome e tempo
 
-
+    // Colonna nome
     var nameCol = document.createElement("div");
     nameCol.textContent = p.name;
-    nameCol.style.width = "25vw";
+    nameCol.style.width = "25vw";       // larghezza fissa colonna nome
     nameCol.style.whiteSpace = "nowrap";
     nameCol.style.overflowX = "auto";
     nameCol.style.fontSize = "4vw";
-    nameCol.style.textAlign = "left";
+    nameCol.style.textAlign = "left";   // sempre allineato a sinistra
 
-
+    // Colonna tempo
     var timeCol = document.createElement("div");
     timeCol.textContent = p.time;
-    timeCol.style.width = "25vw";
-    timeCol.style.textAlign = "right";
+    timeCol.style.width = "25vw";       // larghezza fissa colonna tempo
+    timeCol.style.textAlign = "right";  // sempre allineato a destra
     timeCol.style.fontWeight = "bold";
     timeCol.style.fontSize = "4vw";
 
@@ -5346,7 +5157,8 @@ function writeTimes(n) {
     row.appendChild(timeCol);
     timesDiv.appendChild(row);
 });
-salvaDatiSincronizzati(false);
+localStorage.setItem("timesList", JSON.stringify(timesList));
+localStorage.setItem("namesList", JSON.stringify(namesList));
 }
 function printTimes() {
     var timesDiv = document.getElementById('times');
@@ -5397,7 +5209,7 @@ function cancMemory()
  id_Card=0;
  matchedCount=0;
 }
-
+// Aggiunge l'ascolto del click su tutto il documento
 document.addEventListener('click', () => {
  if (audioCtx && audioCtx.state === 'suspended')
    {
@@ -5430,13 +5242,13 @@ async function passwordDimenticata() {
     codiceRecuperoAttivo = Math.floor(100000 + Math.random() * 900000);
 
     try {
-
+        // 2. INVIO (USA IL SERVICE ID E IL TEMPLATE ID)
         await emailjs.send('service_bwvozbg', 'template_wgw5a1d', {
             email_utente: emailUtente,
             codice: codiceRecuperoAttivo
         });
         
-        if (typeof mostraLoader == "function") mostraLoader(false);
+        if (typeof mostraLoader === "function") mostraLoader(false);
         mostraNotifica("Codice inviato a " + emailUtente);
         mostraInterfacciaVerifica(emailUtente);
         
@@ -5497,7 +5309,7 @@ function mostraNotifica(testo, colore) {
     if (vecchia) vecchia.remove();
     const toast = document.createElement('div');
     toast.className = 'toast-daily';
-    toast.style = `position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 12px 25px; border-radius: 50px; font-size: 14px; z-index: 200000; text-align: center; font-family: sans-serif; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.3); white-space: nowrap;`;
+    toast.style = `position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 12px 25px; border-radius: 50px; font-size: 14px; z-index: 200000; text-align: center; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.3); white-space: nowrap;`;
     toast.innerText = testo;
     document.body.appendChild(toast);
     setTimeout(() => {
@@ -5506,60 +5318,6 @@ function mostraNotifica(testo, colore) {
         setTimeout(() => toast.remove(), 600);
     }, 3000);
 }
-
-function gestisciStatoConnessione() {
-    var pannelloAccount = document.getElementById('pannelloAccount');
-    var statusSalvataggio = document.getElementById('statusSalvataggio');
-    
-
-    if (!navigator.onLine) {
-
-        if (pannelloAccount && (pannelloAccount.style.display == 'block' || pannelloAccount.style.display == 'flex')) {
-            mostraNotifica("Sei offline");
-        }
-        
-
-        if (statusSalvataggio) {
-            statusSalvataggio.innerText = "Offline";
-        }
-    } else {
-
-        if (statusSalvataggio && typeof aggiornaTestoTempo === "function") {
-            aggiornaTestoTempo();
-        }
-    }
-}
-
-
-window.addEventListener('offline', gestisciStatoConnessione);
-
-
-window.addEventListener('online', gestisciStatoConnessione);
-
-
-document.addEventListener('DOMContentLoaded', gestisciStatoConnessione);
-
-
-
-
-const pannelloAccount = document.getElementById('pannelloAccount');
-
-const observer = new MutationObserver(() => {
-
-    if (getComputedStyle(pannelloAccount).display === 'block') {
-
-        gestisciStatoConnessione();
-
-    }
-
-});
-
-observer.observe(pannelloAccount, {
-    attributes: true,
-    attributeFilter: ['style', 'class']
-});
-
-
 
 function showWeightedAvarage()
 {
@@ -6066,7 +5824,10 @@ function showDistanceButtons()
   datadue.style.display = 'block';
  }
 }
-
+var dateFields = [
+ "insgiornouno", "insmeseuno", "insannouno",
+ "insgiornodue", "insmesedue", "insannodue"
+];
 
 function onlyNumbers(input)
 {
@@ -6220,9 +5981,9 @@ function calculateDifferentYear(year1,year2)
 var firstButton=null;
 
 var tzFirst = "Europe/Rome";
-var tzSecond = "Europe/Athens";
+var tzSecond = "Europe/Athens"; // Atene corretta
 
-
+// Funzione per ottenere l'orario preciso nel fuso orario specificato (HH:MM:SS)
 function getActualTime(timeZone) {
   var now = new Date();
   var parts = new Intl.DateTimeFormat("it-IT", {
@@ -6240,11 +6001,11 @@ function getActualTime(timeZone) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
-
+// Funzione per ottenere offset in minuti rispetto a UTC, considerando DST e minuti
 function getOffsetMinutes(timeZone) {
   var now = new Date();
 
-
+  // Formatter con timeZoneName in formato shortOffset (es. GMT+02:00)
   var formatter = new Intl.DateTimeFormat("en-US", {
     timeZone,
     timeZoneName: "shortOffset",
@@ -6265,7 +6026,7 @@ function getOffsetMinutes(timeZone) {
   return sign * (hours * 60 + minutes);
 }
 
-
+// Calcola la differenza in ore fra due timezone, con decimali se serve
 function getHoursDifference(tz1, tz2) {
   var offset1 = getOffsetMinutes(tz1);
   var offset2 = getOffsetMinutes(tz2);
@@ -6277,7 +6038,7 @@ function getHoursDifference(tz1, tz2) {
   return Math.abs(diffHours) + " ore";
 }
 
-
+// Aggiorna UI
 function updateTimesUI() {
   document.getElementById("risultatoOrario_Attuale").textContent = getActualTime(tzFirst);
   document.getElementById("risultatoOrario_Paese").textContent = getActualTime(tzSecond);
@@ -6285,11 +6046,11 @@ function updateTimesUI() {
   document.getElementById("risultatoPaese").textContent = getHoursDifference(tzFirst, tzSecond);
 }
 
-
+// Aggiorna ogni secondo
 setInterval(updateTimesUI, 1000);
 updateTimesUI();
 
-
+// Selezione città
 function chooseCity(btn) {
   var cityName = btn.childNodes[0].nodeValue?.trim() || btn.innerText;
 
@@ -6329,7 +6090,7 @@ function getOffsetMinutes(timeZone) {
   return (tzDate - localDate) / (1000 * 60);
 }
 
-
+// mostra/nascondi fuso orario
 function showJetLag() {
  if(fusoorariodiv.style.display == 'none' || fusoorariodiv.style.display == '') {
   altrodiv.style.display = 'none';
@@ -6340,7 +6101,7 @@ function showJetLag() {
  }
 }
 
-
+// apri/nascondi selezione città
 function openCityDiv() {
  if(cittadiv.style.display == 'none' || cittadiv.style.display == '')
   cittadiv.style.display = 'block';
@@ -6997,7 +6758,7 @@ function calcModeParameters()
     testo = testo.replace(new RegExp(`\\b${f}\\b`, 'g'), frazioni[f]);
   }
 
-
+  /* ==== ESPONENTI ==== */
   var apici = {
   '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴',
   '5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹',
@@ -7008,12 +6769,12 @@ function calcModeParameters()
   g.split('').map(c => apici[c]).join('')
 );
 
-
+// ^3, ^-2, ^12
 testo = testo.replace(/\^([-+]?\d+)/g, (m, e) =>
   e.split('').map(c => apici[c]).join('')
 );
 
-
+  /* ==== PEDICI ==== */
   var pedici = {
     '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄',
     '5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'
@@ -7023,10 +6784,10 @@ testo = testo.replace(/\^([-+]?\d+)/g, (m, e) =>
     el + num.split('').map(c => pedici[c] || c).join('')
   );
 
-
+  /* ==== RIPRISTINO ESCAPE ==== */
   testo = testo.replace(/\|(\S)/g, (m, c) => `§§${c.charCodeAt(0)}§§`);
   testo = testo.replace(/§§(\d+)§§/g, (m, c) => String.fromCharCode(c));
-} 
+} //Provare a mettere a disposizione a destra una tabellina con 5/6 caratteri (^ + - purntino per / e =)che si usano molto spesso quando si prendono appunti
  activeTextarea.value = testo;
  modalitatestodiv.style.display = 'none';
  appunti.style.display = 'block';
@@ -7076,7 +6837,7 @@ document.head.appendChild(style);
     clearTimeout(pressTimer);
   });
   cleanBtn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
+    e.preventDefault(); // evita doppio trigger su alcuni telefoni
     pressTimer = setTimeout(() => {
       cancTris();
     }, 1000);
@@ -7105,7 +6866,7 @@ var cleanBtn2 = document.getElementById('cleanhanged');
     clearTimeout(pressTimer2);
   });
   cleanBtn2.addEventListener('touchstart', (e) => {
-    e.preventDefault();
+    e.preventDefault(); // evita doppio trigger su alcuni telefoni
     pressTimer2 = setTimeout(() => {
       cancHanged();
     }, 1000);
@@ -7133,7 +6894,7 @@ var cleanBtn3 = document.getElementById('cleanhangedfromcaselle');
     clearTimeout(pressTimer3);
   });
   cleanBtn3.addEventListener('touchstart', (e) => {
-    e.preventDefault();
+    e.preventDefault(); // evita doppio trigger su alcuni telefoni
     pressTimer3 = setTimeout(() => {
       cancHanged();
     }, 1000);
@@ -7201,12 +6962,12 @@ function showSettings()
 let sharedAudioCtx = null;
 
 const playClick = () => {
-
+  // 2. Inizializza il contesto solo alla prima esecuzione
   if (!sharedAudioCtx) {
     sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
 
-
+  // 3. Se il contesto è in sospensione (es. dopo una notifica o inattività), rianimalo
   if (sharedAudioCtx.state === 'suspended') {
     sharedAudioCtx.resume();
   }
@@ -7229,26 +6990,26 @@ const playClick = () => {
   oscillator.stop(sharedAudioCtx.currentTime + 0.03);
 };
 
-
+// --- QUESTE DEVONO ESSERE FUORI DA TUTTO (Globali) ---
 var audioCtx = null;
 var timerMusica = null; 
 
 const playSoundtrack = () => {
-
+    // 1. Se la musica è già partita, esci per evitare sovrapposizioni
     if (timerMusica !== null) return; 
 
-
+    // 2. Crea il contesto audio (fondamentale crearlo qui per poterlo chiudere)
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const masterGain = audioCtx.createGain();
     masterGain.gain.setValueAtTime(0.15, audioCtx.currentTime); 
     masterGain.connect(audioCtx.destination);
 
-
+    // --- CONFIGURAZIONE ---
     const bpm = 110;
-    const noteLength = 60 / bpm / 2;
+    const noteLength = 60 / bpm / 2; // Ottavi
     const scale = [130.81, 146.83, 164.81, 196.00, 220.00]; 
 
-
+    // --- STRUMENTO 1: IL BASSO ---
     const playBass = (time, freq) => {
         if (!audioCtx) return;
         const osc = audioCtx.createOscillator();
@@ -7263,7 +7024,7 @@ const playSoundtrack = () => {
         osc.stop(time + noteLength * 2);
     };
 
-
+    // --- STRUMENTO 2: ARPEGGIATORE ---
     const playSynth = (time, freq) => {
         if (!audioCtx) return;
         const osc = audioCtx.createOscillator();
@@ -7282,10 +7043,10 @@ const playSoundtrack = () => {
         osc.stop(time + noteLength);
     };
 
-
+    // --- LOOPER (Motore Ritmico) ---
     let step = 0;
     const sequence = () => {
-
+        // Se audioCtx è stato annullato, fermiamo il loop del timer
         if (!audioCtx) return;
 
         const now = audioCtx.currentTime;
@@ -7299,7 +7060,7 @@ const playSoundtrack = () => {
         }
 
         step++;
-
+        // Salviamo il timer nella variabile globale per poterlo cancellare dopo
         timerMusica = setTimeout(sequence, noteLength * 1000);
     };
 
@@ -7307,13 +7068,13 @@ const playSoundtrack = () => {
 };
 
 const stopSoundtrack = () => {
-
+    // 1. Cancella il timer per evitare che sequence() si chiami ancora
     if (timerMusica) {
         clearTimeout(timerMusica);
         timerMusica = null; 
     }
 
-
+    // 2. Chiudi il contesto audio per zittire immediatamente tutto
     if (audioCtx) {
         audioCtx.close().then(() => {
             audioCtx = null;
@@ -7330,15 +7091,62 @@ const stopSoundtrack = () => {
 
 
 
+/*
+//I prossimi sono da provare
+function applicaTema(tema) {
+    const html = document.documentElement;
+    if (tema === 'dark') {
+        html.style.filter = 'invert(1) hue-rotate(180deg)';
+        // Impediamo che le immagini vengano invertite (altrimenti sembrano negativi fotografici)
+        const media = document.querySelectorAll('img, picture, video, .avatar');
+        media.forEach(el => el.style.filter = 'invert(1) hue-rotate(180deg)');
+    } else {
+        html.style.filter = 'none';
+        const media = document.querySelectorAll('img, picture, video, .avatar');
+        media.forEach(el => el.style.filter = 'none');
+    }
+}
+
+
+function applicaDensita(compatta) {
+    const body = document.body;
+    if (compatta) {
+        body.style.transform = "scale(0.85)";
+        body.style.transformOrigin = "top center"; // Mantiene il centro
+        body.style.width = "117.6%"; // Compensa il rimpicciolimento (1 / 0.85 * 100)
+        body.style.marginLeft = "-8.8%"; // Centra perfettamente l'eccesso di larghezza
+    } else {
+        body.style.transform = "none";
+        body.style.width = "100%";
+        body.style.marginLeft = "0";
+    }
+}
+var savedCompact = localStorage.getItem('compactMode') === 'true';
+document.getElementById('checkCompact').checked = savedCompact;
+applicaDensita(savedCompact);
 
 
 
+4. Gestione al caricamento (window.onload)
+Per evitare che l'app "salti" da chiaro a scuro all'avvio, aggiungi questo dentro il tuo window.onload:
+
+JavaScript
+// Recupera e applica Dark Mode
+var savedDark = localStorage.getItem('darkMode') === 'true';
+document.getElementById('checkDark').checked = savedDark;
+applicaTema(savedDark ? 'dark' : 'light');
+
+// Recupera e applica Densità
+
+*/
+
+// Funzione per APRIRE il pannello al centro
 function apriPannello() {
     document.getElementById('overlayAccount').style.display = 'none';
     document.getElementById('pannelloAccount').style.display = 'none';
 }
 
-
+// Funzione per CHIUDERE il pannello
 function chiudiPannello() {
  if (!firebase.auth().currentUser) {
   return;
@@ -7354,8 +7162,8 @@ function chiudiPannello() {
  }
 }
 
-
-
+// Modifica il tuo bottone simboloEmail per chiamare apriPannello()
+// Esempio: <button id="simboloEmail" onclick="apriPannello()"> ... </button>
 
 function showPeriodicTable()
 {
@@ -7487,43 +7295,21 @@ var atomicMasses = {
 };
 
 
-function disabilitatePriodicTableButtons() {
- document.querySelectorAll(".periodic_table-button").forEach(btn => {
-  if (btn.id == "goback" || btn.textContent.trim() == "❌" || btn.value == "❌")
-  return;
-  btn.disabled = true;
- });
-}
-
-function abilitatePriodicTableButtons()
-{
- document.querySelectorAll(".periodic_table-button").forEach(btn => {
-   btn.disabled = false;
- });
-}
-
-
 function MenuATendina()
 {
  closeInfo(); 
  var menu;
  menu = document.getElementById("dropdownMenu");
  if(menu.style.display == "block") 
- {
-  disabilitatePriodicTableButtons
-  menu.style.display = "none";
- }
- else
- {
-  abilitatePriodicTableButtons
-  menu.style.display = "block";
- }
+ menu.style.display = "none";
+ else 
+ menu.style.display = "block";
 }
 window.onclick = function(e)
 {
  var btnClicked = e.target.classList.contains("dropbtn");
  var menu = document.getElementById("dropdownMenu");
- if(!btnClicked && !menu.contains(e.target))
+ if (!btnClicked && !menu.contains(e.target))
  {
   menu.style.display = "none";
  }
@@ -7534,30 +7320,18 @@ function dropdownmenuforInfo()
  var menu;
  menu = document.getElementById('infomenu');
  if(menu.style.display == "block")
- {
-  disabilitatePriodicTableButtons();
-  menu.style.display = "none";
- }
+ menu.style.display = "none";
  else
- {
-  abilitatePriodicTableButtons();
-  menu.style.display = "block";
- }
+ menu.style.display = "block";
 }
 function MenuforExplain()
 {
  var menu;
  menu = document.getElementById("dropdownMenuforExpl");
- if(menu.style.display == "block")
- {
-  disabilitatePriodicTableButtons(); 
-  menu.style.display = "none";
- }
- else
- {
-  abilitatePriodicTableButtons();
-  menu.style.display = "block";
- }
+ if(menu.style.display == "block") 
+ menu.style.display = "none";
+ else 
+ menu.style.display = "block";
 }
 window.onclick = function(e)
 {
@@ -7850,28 +7624,28 @@ var elementsMap = {
 function getNameElement(input) {
   var n = input.toLowerCase().trim();
 
-
+  // 1. Controllo simboli
   if (n.length <= 2) {
     for (var sym in atomicMasses) {
       if (sym.toLowerCase() == n) return sym;
     }
   }
 
-
+  // 2. Controllo nomi / alias
   for (var [sym, names] of Object.entries(elementsMap)) {
     for (var name of names) {
-      if (name.toLowerCase() == n) return sym;
+      if (name.toLowerCase() == n) return sym;  // confronto esatto
     }
   }
 
-
+  // 3. Controllo numero atomico
   for (var [sym, names] of Object.entries(elementsMap)) {
     for (var name of names) {
       if (name == n) return sym;
     }
   }
 
-  return null;
+  return null; // non trovato
 }
 function showInfo(n)
 {
@@ -9735,7 +9509,16 @@ document.addEventListener("DOMContentLoaded", function()
 
 
 
-
+var firebaseConfig = {
+ apiKey: "AIzaSyADRHmsJEpBHXHQxfJa0pRJ3FQvrAXZ1zY",
+ authDomain: "dailylife-eb517.firebaseapp.com",
+ databaseURL: "https://dailylife-eb517-default-rtdb.firebaseio.com",
+ projectId: "dailylife-eb517",
+ storageBucket: "dailylife-eb517.firebasestorage.app",
+ messagingSenderId: "768028676668",
+ appId: "1:768028676668:web:278ef937a95bc653a8e939",
+ measurementId: "G-12JNQ59C6N"
+};
 if(!firebase.apps.length)
 firebase.initializeApp(firebaseConfig);
 function apriPannello()
@@ -9750,67 +9533,87 @@ function chiudiPannello()
 }
 var dbRef = null;
 firebase.auth().onAuthStateChanged(async (user) => {
- var infoEmailPnl = document.getElementById('infoEmailPannello');
- var opzioniGuest = document.getElementById('opzioniGuest');
- var opzioniUser = document.getElementById('opzioniUser');
- var btnChiudi = document.getElementById('btnChiudiPannello');
- var loader = document.getElementById('loaderGlobale');
- if(user) {
-  localStorage.setItem("user_email", user.email);
-  var emailKey = user.email.replace(/\./g, ',');
-  var sessionRef = firebase.database().ref('active_sessions/' + emailKey);
-  sessionRef.set({ id: currentSessionId, time: Date.now() });
-  sessionRef.on('value', (snapshot) => {
-   var data = snapshot.val();
-   if (data && data.id !== currentSessionId) {
-    sessionRef.off();
-    bloccaAccessoMultiplo();
-   }
-  });
-  dbRef = firebase.database().ref('users/' + user.uid + '/dati');
-  dbRef.on('value', (snapshot) => {
-   var datiCloud = snapshot.val();
-   var datiLocaliRaw = localStorage.getItem("datiAppCompleti");
-   var timestampLocale = 0;
-   if (datiLocaliRaw) {
-    var parsedLocale = JSON.parse(datiLocaliRaw);
-    timestampLocale = parsedLocale.ultimoAggiornamento || 0;
-   }
-   if (datiCloud) {
-    var timestampCloud = datiCloud.ultimoAggiornamento || 0;
-    if (timestampCloud >= timestampLocale) {
-     timesList = datiCloud.timesList || [];
-     namesList = datiCloud.namesList || [];
-     localStorage.setItem("datiAppCompleti", JSON.stringify(datiCloud));
-     localStorage.setItem("timesList", JSON.stringify(timesList));
-     localStorage.setItem("namesList", JSON.stringify(namesList));
-     if (timesList && timesList.length > 0) {
-      var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
-      paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
-      timesList = paired.map(p => p.time);
-      namesList = paired.map(p => p.name);
-     }
-     if (typeof printTimes === 'function') {
-      printTimes();
-     }
-    }
-   }
-  });
-  aggiornaAvatar(user.email);
-  if(infoEmailPnl) infoEmailPnl.innerText = user.email;
-  if(opzioniGuest) opzioniGuest.style.display = 'none';
-  if(opzioniUser) opzioniUser.style.display = 'block';
-  if(btnChiudi) btnChiudi.style.display = 'block';
-  if(loader) loader.style.display = 'none';
- }
-});
+    var infoEmailPnl = document.getElementById('infoEmailPannello');
+    var opzioniGuest = document.getElementById('opzioniGuest');
+    var opzioniUser = document.getElementById('opzioniUser');
+    var btnChiudi = document.getElementById('btnChiudiPannello');
+    var loader = document.getElementById('loaderGlobale');
 
+    if(user) {
+    // Controlla se abbiamo già fatto il "primo caricamento" per questa sessione
+    if (!sessionStorage.getItem('first_load_done')) {
+        sessionStorage.setItem('first_load_done', 'true');
+        
+        // Carica i dati e POI ricarica la pagina per popolare l'interfaccia
+        caricaDatiDalCloud(true).then(() => {
+            location.reload();
+        });
+        return; // Interrompe l'esecuzione del resto per evitare sfarfallii
+    }
+    
+    // Prosegue con la normale logica se il ricaricamento è già avvenuto
+    localStorage.setItem("user_email", user.email);
+        var emailKey = user.email.replace(/\./g, ',');
+        // USARE SEMPRE QUESTO PERCORSO: active_sessions
+        var sessionRef = firebase.database().ref('active_sessions/' + emailKey);
+
+        // A. Diciamo al cloud: "Ora ci sono io!"
+        sessionRef.set({
+            id: currentSessionId,
+            time: Date.now()
+        });
+
+        // B. Ascoltiamo: se l'ID cambia, blocchiamo questo dispositivo
+        sessionRef.on('value', (snapshot) => {
+            var data = snapshot.val();
+            if (data && data.id !== currentSessionId) {
+                // Rimuoviamo il listener prima di bloccare per evitare loop
+                sessionRef.off();
+                bloccaAccessoMultiplo();
+            }
+        });
+
+        // --- RESTO DEL TUO CODICE ---
+        dbRef = firebase.database().ref('users/' + user.uid + '/dati');
+        aggiornaAvatar(user.email);
+        
+        if(infoEmailPnl) infoEmailPnl.innerText = user.email;
+        if(opzioniGuest) opzioniGuest.style.display = "none";
+        if(opzioniUser) opzioniUser.style.display = "block";
+        if(btnChiudi) btnChiudi.style.setProperty('display', 'inline-block', 'important');
+        
+        chiudiPannello(); 
+
+        try {
+            await caricaDatiDalCloud(true); 
+        } catch (e) {
+            console.error("Errore:", e);
+        } finally {
+            if (loader) loader.style.display = 'none';
+        }
+
+    } else {
+        // Logica Guest (codice originale)
+        dbRef = null;
+        if(infoEmailPnl) infoEmailPnl.innerText = "Effettua l'accesso per continuare";
+        if(opzioniGuest) opzioniGuest.style.display = "block";
+        if(opzioniUser) opzioniUser.style.display = "none";
+        if(btnChiudi) btnChiudi.style.setProperty('display', 'none', 'important');
+        document.getElementById('inizialeAvatar').innerText = "?";
+        apriPannello();
+        if (loader) loader.style.display = 'none';
+    }
+});
 var originalSetItem = localStorage.setItem;
 localStorage.setItem = function(key, value) {
  originalSetItem.apply(this, arguments);
  segnaModificaE_Salva(); 
 };
-
+var originalRemoveItem = localStorage.removeItem;
+localStorage.removeItem = function(key) {
+ originalRemoveItem.apply(this, arguments);
+ segnaModificaE_Salva();
+};
 function salvaDato(chiave, valore) {
  localStorage.setItem(chiave, valore);
  if(dbRef)
@@ -9850,23 +9653,16 @@ async function caricaDatiDalCloud(forza = false) {
             }
             if(datiCambiati) {
                 sessionStorage.setItem('ultimo_sync_time', Date.now());
-                return true;
+                return true; // Comunica che i dati sono nuovi
             }
         }
     } catch (e) { console.error(e); }
     return false;
 }
 
-var ultimoSalvataggio = null;
+var ultimoSalvataggio = null; // Memorizza l'ora dell'ultimo sync riuscito
 
 function aggiornaTestoTempo() {
-
-if (!navigator.onLine) {
-        var statusSalvataggio = document.getElementById('statusSalvataggio');
-        if (statusSalvataggio) statusSalvataggio.innerText = "Offline";
-        return;
-    }
-
     var elemento = document.getElementById('statusSalvataggio');
     if (!elemento || !ultimoSalvataggio) return;
 
@@ -9882,37 +9678,51 @@ if (!navigator.onLine) {
     }
 }
 
-
+// Avvia un timer che aggiorna la scritta ogni minuto
 setInterval(aggiornaTestoTempo, 60000);
 
-
-
-
-
-function segnaModificaE_Salva()
-{
- clearTimeout(timerSalvataggio);
- localStorage.setItem('ultimoAggiornamento', Date.now());
- timerSalvataggio = setTimeout(() => {
-  syncTotaleSuCloud();
- }, 5000); 
+async function syncTotaleSuCloud() {
+    if(!dbRef) return;
+    
+    var datiDaSalvare = {};
+    for(var i=0; i<localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if(!k.match(/[.#$\[\]]/))
+            datiDaSalvare[k] = localStorage.getItem(k);
+    }
+    
+    try {
+        await dbRef.set(datiDaSalvare);
+        sessionStorage.setItem('ultimo_sync_time', Date.now());
+        
+        // --- AGGIUNGI QUESTE DUE RIGHE QUI ---
+        ultimoSalvataggio = Date.now(); 
+        aggiornaTestoTempo();
+        // -------------------------------------
+        
+    } catch (e) {
+        console.error("Errore sync:", e);
+    }
 }
 var timerSalvataggio; 
 function segnaModificaE_Salva()
 {
  clearTimeout(timerSalvataggio);
- timerSalvataggio = setTimeout(() => {
+ timerSalvataggio = setTimeout(() => { //5 secondi passati. Sincronizzazione automatica
   syncTotaleSuCloud();
  }, 5000); 
 }
-
-
-
-
-
-
-
-
+function mostraNotifica(testo)
+{
+ var container = document.getElementById('toast-container');
+ var toast = document.createElement('div');
+ toast.className = 'toast-messaggio';
+ toast.innerText = testo;
+ container.appendChild(toast);
+ setTimeout(() => {
+  toast.remove();
+ }, 3000);
+}
 function mostraLoader(stato)
 {
  document.getElementById('loaderGlobale').style.display = stato ? 'flex' : 'none';
@@ -9946,30 +9756,30 @@ async function eseguiAccesso() {
     }
 }
 
-
+// Questa funzione deve stare fuori, così la console resta pulita
 function isEmailValida(email) {
     var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
 }
 async function eseguiRegistrazione() {
-
+    // 1. Prendi i valori e usa .trim() per evitare errori dovuti a spazi vuoti accidentali
     var email = document.getElementById('emailInput').value.trim();
     var pass = document.getElementById('passInput').value;
 
-
+    // 2. Controllo campi vuoti
     if (!email || !pass) {
         mostraNotifica("Compila tutti i campi");
         return;
     }
 
-
-
+    // 3. IL FILTRO ANTI-ERRORE CONSOLE (Fondamentale!)
+    // Se la mail è formattata male, ci fermiamo PRIMA di chiamare Firebase
     if (!isEmailValida(email)) {
         mostraNotifica("Errore: Formato email non valido.");
-        return;
+        return; // <--- Questo impedisce l'errore rosso in console
     }
 
-
+    // 4. Controllo lunghezza minima password (standard Firebase)
     if (pass.length < 6) {
         mostraNotifica("La password deve avere almeno 6 caratteri.");
         return; 
@@ -9981,17 +9791,17 @@ async function eseguiRegistrazione() {
         await syncTotaleSuCloud();
         mostraNotifica("Account creato!");
         
-
+        // Dentro al blocco di successo della registrazione:
         try {
             await inviaNotificaAttivitaUtente("Nuova Registrazione", email);
         } catch (e) {
-
+            // Silenzioso: nessun blocco dell'applicazione sul telefono se la mail fallisce
         }
 
         sfondoopaco.style.display = 'none';
     }
     catch (e) {
-
+        // Qui gestiamo solo l'errore se la mail esiste già nel database
         if (e.code == 'auth/email-already-in-use') {
             mostraNotifica("Questa email è già registrata.");
         } else {
@@ -10003,32 +9813,56 @@ async function eseguiRegistrazione() {
     }
 }
 async function logoutSicuro() {
-
+    // 1. Mostriamo subito il loader per "congelare" la vista
     const loader = document.getElementById('loaderGlobale');
     if (loader) loader.style.display = 'flex';
 
     try {
-
+        // 2. Sincronizzazione finale (se il database è attivo)
         if (typeof dbRef !== 'undefined' && dbRef) {
-            
+            // Usiamo un timeout di 2 secondi per il salvataggio, così se la rete è lenta non restiamo bloccati
             await Promise.race([
                 syncTotaleSuCloud(),
                 new Promise(resolve => setTimeout(resolve, 2000))
             ]);
         }
 
-
+        // 3. Logout da Firebase e pulizia locale
         await firebase.auth().signOut();
         localStorage.clear();
 
-
+        // 4. RELOAD IMMEDIATO
+        // Non usiamo setTimeout: più veloce ricarichiamo, meno l'utente vede "salti"
+        //location.reload();
 
     } catch (error) {
         console.error("Errore durante il logout:", error);
-
+        // In caso di errore (es. rete assente), puliamo comunque il locale e forziamo il reload
         localStorage.clear();
-
+        //location.reload();
     }
 }
-//window.addEventListener('beforeunload', syncTotaleSuCloud);
+window.addEventListener('beforeunload', syncTotaleSuCloud);
 
+function aggiornaAvatar(email)
+{
+ if(!email)
+ return;
+ var iniziale = email.charAt(0).toUpperCase();
+ var elementoIniziale = document.getElementById('inizialeAvatar');
+ var bottone = document.getElementById('simboloEmail');
+ var colori = {
+  'A': '#F44336', 'B': '#E91E63', 'C': '#9C27B0', 'D': '#673AB7',
+  'E': '#3F51B5', 'F': '#2196F3', 'G': '#03A9F4', 'H': '#00BCD4',
+  'I': '#009688', 'J': '#4CAF50', 'K': '#8BC34A', 'L': '#CDDC39',
+  'M': '#FFEB3B', 'N': '#FFC107', 'O': '#FF9800', 'P': '#FF5722',
+  'Q': '#795548', 'R': '#9E9E9E', 'S': '#607D8B', 'T': '#333333',
+  'U': '#D32F2F', 'V': '#C2185B', 'W': '#7B1FA2', 'X': '#512DA8',
+  'Y': '#303F9F', 'Z': '#1976D2'
+ };
+ var coloreSfondo = colori[iniziale] || '#757575';
+ elementoIniziale.innerText = iniziale;
+ bottone.style.backgroundColor = coloreSfondo;
+ bottone.style.color = "white"; // La vartera bianca stacca meglio sui colori
+ bottone.style.backdropFilter = "none"; // Togliamo il blur se c'è un colore pieno
+}
