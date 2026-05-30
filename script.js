@@ -6028,12 +6028,18 @@ function getHoursDifference(tz1, tz2) {
 
 
 function updateTimesUI() {
-  document.getElementById("risultatoOrario_Attuale").textContent = getActualTime(tzFirst);
-  document.getElementById("risultatoOrario_Paese").textContent = getActualTime(tzSecond);
+  var elAttuale = document.getElementById("risultatoOrario_Attuale");
+  var elPaese = document.getElementById("risultatoOrario_Paese");
+  var elDiff = document.getElementById("risultatoPaese");
 
-  document.getElementById("risultatoPaese").textContent = getHoursDifference(tzFirst, tzSecond);
+  if (!elAttuale && !elPaese && !elDiff) {
+    return;
+  }
+
+  if (elAttuale) elAttuale.textContent = getActualTime(tzFirst);
+  if (elPaese) elPaese.textContent = getActualTime(tzSecond);
+  if (elDiff) elDiff.textContent = getHoursDifference(tzFirst, tzSecond);
 }
-
 
 setInterval(updateTimesUI, 1000);
 updateTimesUI();
