@@ -9538,6 +9538,7 @@ function chiudiPannello()
  document.getElementById('pannelloAccount').style.display = 'none';
 }
 var dbRef = null;
+
 firebase.auth().onAuthStateChanged(async (user) => {
  var infoEmailPnl = document.getElementById('infoEmailPannello');
  var opzioniGuest = document.getElementById('opzioniGuest');
@@ -9599,13 +9600,18 @@ firebase.auth().onAuthStateChanged(async (user) => {
      }
     });
    }
-   if (typeof caricaCompiti === 'function') caricaCompiti();
-   if (typeof caricaPromemoria === 'function') caricaPromemoria();
-   if (typeof caricaAttivita === 'function') caricaAttivita();
-   if (typeof caricaLista === 'function') caricaLista();
-   if (typeof caricaPianoSettimanale === 'function') caricaPianoSettimanale();
-   if (typeof caricaDaily === 'function') caricaDaily();
-   if (typeof caricaNote === 'function') caricaNote();
+   try {
+    var savedElements = document.querySelectorAll('.save');
+    savedElements.forEach((el, index) => {
+     var key = `save_field_${index}`;
+     var savedValue = localStorage.getItem(key);
+     if(savedValue !== null) {
+      el.value = savedValue;
+     }
+    });
+   } catch(err) {
+    console.error(err);
+   }
   } catch (e) {
    console.error(e);
   } finally {
