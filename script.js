@@ -57,69 +57,80 @@ document.addEventListener('DOMContentLoaded', applicaCorrezioniApple);
 
 
 window.onload = function() {
-
-    
-    if (localStorage.getItem("timesList")) {
-        timesList = JSON.parse(localStorage.getItem("timesList"));
-    }
-
-    if (localStorage.getItem("namesList")) {
-        namesList = JSON.parse(localStorage.getItem("namesList"));
-    }
-
-    if(timesList && timesList.length > 0) {
-      
-        var paired = timesList.map((t, i) => ({ name: namesList[i], time: t }));
-        paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
-        timesList = paired.map(p => p.time);
-        namesList = paired.map(p => p.name);
-        printTimes();
-    }
-
-    
-    dateFields.forEach(id => {
-        var input = document.getElementById(id);
-        if(input) onlyNumbers(input);
-    });
-
-    autoNext(document.getElementById("insgiornouno"), document.getElementById("insmeseuno"), 2);
-    autoNext(document.getElementById("insmeseuno"), document.getElementById("insannouno"), 2);
-    autoNext(document.getElementById("insgiornodue"), document.getElementById("insmesedue"), 2);
-    autoNext(document.getElementById("insmesedue"), document.getElementById("insannodue"), 2);
-
-    
-    option_number = Number(localStorage.getItem("option_number") || 0);
-
-    if (option_number < 0 || option_number >= button_options.length || isNaN(option_number)) {
-        option_number = 0;
-    }
-
-    defaultMethod = button_options[option_number];
-    writeOnDefaultButton();
-    
-    
-    if(typeof modeArray !== 'undefined') {
-        percentageMode = modeArray[option_number];
-    }
- 
-
- checkClick.checked = interactionSoundEffects;
- checkSottofondo.checked = gamesMusic;
- checkVibrazione.checked = mobileVibration;
-
-
-
-document.addEventListener('selectstart', function(e) {
-    
-    const allowedTags = ['INPUT', 'TEXTAREA'];
-    
-    
-    if (!allowedTags.includes(e.target.tagName) && !e.target.isContentEditable) {
-        e.preventDefault();
-    }
-});
-
-
+ try {
+  var storedTimes = localStorage.getItem("timesList");
+  if (storedTimes) {
+   timesList = JSON.parse(storedTimes);
+  }
+  if (!Array.isArray(timesList)) {
+   timesList = [];
+  }
+ } catch(e) {
+  timesList = [];
+ }
+ try {
+  var storedNames = localStorage.getItem("namesList");
+  if (storedNames) {
+   namesList = JSON.parse(storedNames);
+  }
+  if (!Array.isArray(namesList)) {
+   namesList = [];
+  }
+ } catch(e) {
+  namesList = [];
+ }
+ if(Array.isArray(timesList) && timesList.length > 0) {
+  var paired = timesList.map((t, i) => ({ name: namesList[i] || "", time: t }));
+  paired.sort((a, b) => timeToMs(a.time) - timeToMs(b.time));
+  timesList = paired.map(p => p.time);
+  namesList = paired.map(p => p.name);
+  if (typeof printTimes === 'function') {
+   printTimes();
+  }
+ }
+ if (typeof dateFields !== 'undefined' && Array.isArray(dateFields)) {
+  dateFields.forEach(id => {
+   var input = document.getElementById(id);
+   if(input && typeof onlyNumbers === 'function') {
+    onlyNumbers(input);
+   }
+  });
+ }
+ if (typeof autoNext === 'function') {
+  var g1 = document.getElementById("insgiornouno");
+  var m1 = document.getElementById("insmeseuno");
+  var a1 = document.getElementById("insannouno");
+  var g2 = document.getElementById("insgiornodue");
+  var m2 = document.getElementById("insmesedue");
+  var a2 = document.getElementById("insannodue");
+  if (g1 && m1) autoNext(g1, m1, 2);
+  if (m1 && a1) autoNext(m1, a1, 2);
+  if (g2 && m2) autoNext(g2, m2, 2);
+  if (m2 && a2) autoNext(m2, a2, 2);
+ }
+ option_number = Number(localStorage.getItem("option_number") || 0);
+ if (option_number < 0 || option_number >= button_options.length || isNaN(option_number)) {
+  option_number = 0;
+ }
+ defaultMethod = button_options[option_number];
+ if (typeof writeOnDefaultButton === 'function') {
+  writeOnDefaultButton();
+ }
+ if(typeof modeArray !== 'undefined' && typeof percentageMode !== 'undefined') {
+  percentageMode = modeArray[option_number];
+ }
+ var cc = document.getElementById('checkClick');
+ var cs = document.getElementById('checkSottofondo');
+ var cv = document.getElementById('checkVibrazione');
+ if (cc) cc.checked = interactionSoundEffects;
+ if (cs) cs.checked = gamesMusic;
+ if (cv) cv.checked = mobileVibration;
+ document.addEventListener('selectstart', function(e) {
+  const allowedTags = ['INPUT', 'TEXTAREA'];
+  if (!allowedTags.includes(e.target.tagName) && !e.target.isContentEditable) {
+   e.preventDefault();
+  }
+ });
 };
 
 
@@ -1900,14 +1911,12 @@ function showMore()
   btnImpostazioni.style.display = 'block';
  }
 }
-function salvaCompiti()
-{
+function salvaCompiti() {
  var inputs = document.querySelectorAll('#container input.save');
  var textareas = document.querySelectorAll('#container textarea.save');
  var checks = document.querySelectorAll('#container button.check');
  var valori = [];
- for(var j = 0; j < inputs.length; j += 2)
- {
+ for(var j = 0; j < inputs.length; j += 2) {
   var data = inputs[j].value;
   var materia = inputs[j + 1].value;
   var testo = textareas[j / 2]?.value || '';
@@ -1921,14 +1930,12 @@ function salvaCompiti()
  }
  salvaDatoApplicazione('campiSalvati', valori);
 }
-function salvaPromemoria()
-{
+function salvaPromemoria() {
  var inputs = document.querySelectorAll('#container2 input.save');
  var textareas = document.querySelectorAll('#container2 textarea.save');
  var checks = document.querySelectorAll('#container2 button.check');
  var promemoria = [];
- for(var j = 0; j < inputs.length; j += 2)
- {
+ for(var j = 0; j < inputs.length; j += 2) {
   var data = inputs[j].value;
   var ora = inputs[j + 1].value;
   var testo = textareas[j / 2]?.value || '';
@@ -1942,13 +1949,11 @@ function salvaPromemoria()
  }
  salvaDatoApplicazione('promemoriaSalvati', promemoria);
 }
-function salvaAttivita()
-{
+function salvaAttivita() {
  var container = document.getElementById('container3');
  var attivita = [];
  var rows = container.children; 
- for (var i=0;i<rows.length;i++)
- {
+ for (var i=0;i<rows.length;i++) {
   var row = rows[i];
   var dataVal = row.children[0].value;
   var titoloVal = row.children[1].value;
@@ -1964,149 +1969,130 @@ function salvaAttivita()
  }
  salvaDatoApplicazione('attivitaSalvate', attivita);
 }
-function salvaLista()
-{
+function salvaLista() {
  var container = document.getElementById('container4');
  var inputs = container.querySelectorAll('input.save');
  var checks = container.querySelectorAll('button.check');
  var lista = [];
- for (var i = 0; i < inputs.length; i++)
- {
+ for (var i = 0; i < inputs.length; i++) {
   var val = inputs[i].value;
   var colore = checks[i]?.style.backgroundColor || 'white';
   lista.push({
-    valore: val,
-    colore: colore
+   valore: val,
+   colore: colore
   });
  }
- localStorage.setItem('listaSalvata', JSON.stringify(lista));
+ salvaDatoApplicazione('listaSalvata', lista);
 }
-function salvaPianoSettimanale()
-{
+function salvaPianoSettimanale() {
  var giorni = ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'];
  var dati = {};
  giorni.forEach(g => {
-   var textarea = document.getElementById(`att${g}`);
-   dati[g] = textarea.value;
+  var textarea = document.getElementById(`att${g}`);
+  if(textarea) dati[g] = textarea.value;
  });
- localStorage.setItem('pianoSettimanale', JSON.stringify(dati));
+ salvaDatoApplicazione('pianoSettimanale', dati);
 }
-function caricaPianoSettimanale()
-{
+function caricaPianoSettimanale() {
  var datiJSON = localStorage.getItem('pianoSettimanale');
- if(!datiJSON)
- return;
+ if(!datiJSON) return;
  var dati = JSON.parse(datiJSON);
  var giorni = ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'];
  giorni.forEach(g => {
   var textarea = document.getElementById(`att${g}`);
-  if(textarea && dati[g] !== undefined)
-  textarea.value = dati[g];
+  if(textarea && dati[g] !== undefined) textarea.value = dati[g];
  });
 }
-function salvaDaily()
-{
+function salvaDaily() {
  var container = document.getElementById('containerG');
  var blocks = [];
  var children = container.children;
- for (var i = 0; i < children.length; i++)
- {
+ for (var i = 0; i < children.length; i++) {
   var el = children[i];
-  if(el.tagName == 'BUTTON' && el.classList.contains('save'))
-  {
+  if(el.tagName == 'BUTTON' && el.classList.contains('save')) {
    var id = el.dataset.id;
    var titolo = el.textContent;
    var table = el.nextElementSibling;
    var righe = [];
-   if(table && table.tagName == 'TABLE')
-   {
+   if(table && table.tagName == 'TABLE') {
     var rows = table.rows;
-    for (var r = 0; r < rows.length; r++)
-    {
+    for (var r = 0; r < rows.length; r++) {
      var textarea = rows[r].cells[0].querySelector('textarea');
-     if(textarea)
-     righe.push(textarea.value);
+     if(textarea) righe.push(textarea.value);
     }
    }
    blocks.push({
-   id: id,
-   titolo: titolo,
-   righe: righe
+    id: id,
+    titolo: titolo,
+    righe: righe
    });
   }
  }
  salvaDatoApplicazione('dailyData', blocks);
 }
-function caricaDaily()
-{
+function caricaDaily() {
  var salvati = localStorage.getItem('dailyData');
  if(!salvati) return;
+ var container = document.getElementById('containerG');
+ if(!container) return;
+ 
+ container.innerHTML = ''; 
  var blocks = JSON.parse(salvati);
- blocks.reverse().forEach(blocco => addDaily(blocco.titolo, blocco.righe, blocco.id));
+ 
+ blocks.forEach(blocco => {
+  if(typeof addDaily === 'function') {
+   addDaily(blocco.titolo, blocco.righe, blocco.id);
+  }
+ });
 }
 function salvaNote() {
-    var container = document.getElementById('container5');
-    var blocks = [];
-    var children = container.children;
-
-    for (var i = 0; i < children.length; i++) {
-        var el = children[i];
-        
-        
-        if (el.tagName == 'BUTTON' && el.classList.contains('save')) {
-            var id = el.dataset.id;
-            var titoloPrincipale = el.textContent;
-            var table = el.nextElementSibling; 
-            var righeCapitoli = [];
-
-            
-            if (table && table.tagName == 'TABLE') {
-                var rows = table.rows;
-                for (var r = 0; r < rows.length; r++) {
-                    var row = rows[r];
-
-                    
-                    var titleDiv = row.querySelector('.chapter-title'); 
-                    var textarea = row.querySelector('textarea.save');
-
-                    if (titleDiv && textarea) {
-                        righeCapitoli.push({
-                            titolo: titleDiv.textContent, 
-                            contenuto: textarea.value     
-                        });
-                    }
-                }
-            }
-
-            
-            blocks.push({
-                id: id,
-                titolo: titoloPrincipale,
-                capitoli: righeCapitoli
-            });
-        }
+ var container = document.getElementById('container5');
+ var blocks = [];
+ var children = container.children;
+ for (var i = 0; i < children.length; i++) {
+  var el = children[i];
+  if (el.tagName == 'BUTTON' && el.classList.contains('save')) {
+   var id = el.dataset.id;
+   var titoloPrincipale = el.textContent;
+   var table = el.nextElementSibling; 
+   var righeCapitoli = [];
+   if (table && table.tagName == 'TABLE') {
+    var rows = table.rows;
+    for (var r = 0; r < rows.length; r++) {
+     var row = rows[r];
+     var titleDiv = row.querySelector('.chapter-title'); 
+     var textarea = row.querySelector('textarea.save');
+     if (titleDiv && textarea) {
+      righeCapitoli.push({
+       titolo: titleDiv.textContent, 
+       contenuto: textarea.value     
+      });
+     }
     }
-    
-    
-    salvaDatoApplicazione('noteData', blocks);
+   }
+   blocks.push({
+    id: id,
+    titolo: titoloPrincipale,
+    capitoli: righeCapitoli
+   });
+  }
+ }
+ salvaDatoApplicazione('noteData', blocks);
 }
 function caricaNote() {
-    var salvate = localStorage.getItem('noteData');
-    if (!salvate) return;
+ var salvate = localStorage.getItem('noteData');
+ if (!salvate) return;
+ var container = document.getElementById('container5');
+ if(!container) return;
 
-    
-    var blocks = JSON.parse(salvate).reverse();
-    var container = document.getElementById('container5');
-    container.innerHTML = ''; 
+ container.innerHTML = ''; 
+ var blocks = JSON.parse(salvate);
 
-    blocks.forEach(blocco => {
-        
-        
-        addNotes(blocco.titolo, blocco.capitoli || [], blocco.id);
-        
-        
-        
-    });
+ blocks.forEach(blocco => {
+  if(typeof addNotes === 'function') {
+   addNotes(blocco.titolo, blocco.capitoli || [], blocco.id);
+  }
+ });
 }
 var loading = true;
 function addHomeWorks(valore = '', valoreData = '', valoreTesto = '', coloreCheck = 'white')
@@ -9552,7 +9538,6 @@ function chiudiPannello()
  document.getElementById('pannelloAccount').style.display = 'none';
 }
 var dbRef = null;
-var dbRef = null;
 firebase.auth().onAuthStateChanged(async (user) => {
  var infoEmailPnl = document.getElementById('infoEmailPannello');
  var opzioniGuest = document.getElementById('opzioniGuest');
@@ -9602,6 +9587,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
   if(btnChiudi) btnChiudi.style.setProperty('display', 'inline-block', 'important');
   chiudiPannello();
   try {
+   if (loader) loader.style.display = 'flex';
    const snapshot = await dbRef.once('value');
    const datiCloud = snapshot.val();
    if (datiCloud) {
@@ -9613,9 +9599,13 @@ firebase.auth().onAuthStateChanged(async (user) => {
      }
     });
    }
-   if (typeof inizializzaInterfacciaDati === 'function') {
-    inizializzaInterfacciaDati();
-   }
+   if (typeof caricaCompiti === 'function') caricaCompiti();
+   if (typeof caricaPromemoria === 'function') caricaPromemoria();
+   if (typeof caricaAttivita === 'function') caricaAttivita();
+   if (typeof caricaLista === 'function') caricaLista();
+   if (typeof caricaPianoSettimanale === 'function') caricaPianoSettimanale();
+   if (typeof caricaDaily === 'function') caricaDaily();
+   if (typeof caricaNote === 'function') caricaNote();
   } catch (e) {
    console.error(e);
   } finally {
@@ -9897,6 +9887,15 @@ function aggiornaAvatar(email)
 }
 
 function salvaDatoApplicazione(chiave, valore) {
+ if (valore === null || valore === undefined) {
+  return;
+ }
+ if (Array.isArray(valore) && valore.length === 0) {
+  var archiviato = localStorage.getItem(chiave);
+  if (!archiviato || archiviato === 'null') {
+   return;
+  }
+ }
  if (typeof valore === 'object') {
   localStorage.setItem(chiave, JSON.stringify(valore));
  } else {
